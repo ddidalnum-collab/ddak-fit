@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DDak-Fit (딱-핏)</title>
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" type="image/png" href="fridge_fit_main.png">
+    <link rel="apple-touch-icon" href="fridge_fit_main.png">
+
+    <style>
+        :root {
+            --primary: #0076FF;
+            --primary-dark: #0056b3;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ff9800;
+            --bg-warm: #f7f6f2;
+            --card-bg: #ffffff;
+            --text-dark: #222222;
+            --text-sub: #666666;
+            --line-color: #e5e5ea;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #2c2c2e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+        .phone-frame { width: 100%; max-width: 480px; height: 100vh; background: var(--bg-warm); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.3); overflow: hidden; }
+        
+        .screen { flex: 1; display: none; flex-direction: column; height: 100%; overflow-y: auto; background: var(--bg-warm); position: relative; }
+        .screen.active { display: flex; }
+
+        /* Top Header */
+        .app-header { background: #ffffff; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--line-color); z-index: 20; }
+        .brand-box { display: flex; align-items: center; gap: 8px; }
+        .brand-title { font-size: 16px; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
+        .brand-sub { font-size: 12px; font-weight: bold; color: #555; background: #eef2f7; padding: 3px 6px; border-radius: 4px; }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header-btn { background: none; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: var(--text-sub); display: flex; align-items: center; }
+
+        /* 1. Splash Screen */
+        #splash-screen { background: #ffffff; justify-content: center; align-items: center; text-align: center; padding: 25px; }
+        .splash-top { font-size: 15px; font-weight: 800; color: #5a554e; margin-bottom: 12px; letter-spacing: -0.5px; }
+        .splash-img-box { width: 230px; height: 260px; display: flex; justify-content: center; align-items: center; margin: 10px 0; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+        .splash-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .splash-title { font-size: 32px; font-weight: 900; color: var(--text-dark); margin-top: 15px; letter-spacing: -1px; }
+        .splash-title span { color: var(--primary); font-size: 24px; font-weight: 800; margin-left: 4px; }
+        .splash-sub { font-size: 13px; color: #8a857e; margin-top: 6px; font-weight: 600; }
+        .splash-footer { font-size: 12px; color: #a09d96; font-weight: bold; margin-top: 35px; }
+
+        /* 2. Ready Screen */
+        .ready-content { flex: 1; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; }
+        .ready-card { background: var(--card-bg); border-radius: 14px; padding: 20px 18px; box-shadow: 0 4px 14px rgba(0,0,0,0.04); border: 1px solid var(--line-color); }
+        .ready-badge { display: inline-block; background: #eef5ff; color: var(--primary); font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 6px; margin-bottom: 10px; }
+        .ready-title { font-size: 19px; font-weight: 900; color: var(--text-dark); line-height: 1.4; margin-bottom: 10px; }
+        .ready-desc { font-size: 13.5px; color: var(--text-sub); line-height: 1.55; }
+        .ready-notice { background: #fff8e6; border-left: 4px solid var(--warning); padding: 12px 14px; border-radius: 6px; margin-top: 14px; font-size: 13px; color: #855b00; font-weight: 600; line-height: 1.5; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 10px; }
+        .main-action-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(0,118,255,0.25); }
+        .sub-action-btn { width: 100%; background: #ffffff; color: #444; border: 1.5px solid #d0d5dd; padding: 13px; border-radius: 12px; font-size: 14.5px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+        /* 3 & 5. Camera View */
+        .camera-container { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        #videoFeed, #videoFeed2 { width: 100%; height: 100%; object-fit: cover; }
+        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; pointer-events: none; mix-blend-mode: screen; filter: drop-shadow(0 0 2px #00ff66); }
+        
+        .mark-content { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        .mark-content button:disabled, .shutter-btn:disabled { opacity: 0.45; }
+        .mark-content p { font-size: 14px; line-height: 1.5; }
+        #markPrompt { font-weight: 800; color: var(--primary-dark); }
+        #markCanvas { display: block; max-width: 100%; max-height: 55dvh; width: auto; height: auto; align-self: center; cursor: crosshair; }
+        .camera-back { position: absolute; top: 68px; left: 12px; z-index: 16; color: #fff; background: #242424; border: 0; border-radius: 8px; padding: 9px 12px; }
+        .auto-shot-toggle { left: auto; right: 12px; font-size: 13px; }
+        .level-bar { text-align: center; }
+
+        .camera-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 16px; }
+        .grid-line-h { position: absolute; left: 5%; width: 90%; height: 1.5px; background: rgba(255,255,255,0.35); }
+        .grid-line-h.top { top: 22%; }
+        .grid-line-h.mid { top: 50%; }
+        .grid-line-h.bottom { top: 78%; }
+        .grid-line-v { position: absolute; top: 10%; height: 80%; width: 1.5px; background: rgba(255,255,255,0.3); }
+        .grid-line-v.left { left: 25%; }
+        .grid-line-v.center { left: 50%; }
+        .grid-line-v.right { left: 75%; }
+        
+        .level-bar { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 800; align-self: center; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); }
+        .level-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+        .level-dot.tilt { background: var(--danger); }
+
+        .slider-box { position: absolute; bottom: 85px; width: 80%; left: 10%; background: rgba(0,0,0,0.65); padding: 8px 14px; border-radius: 20px; display: flex; align-items: center; gap: 10px; z-index: 15; }
+        .slider-box span { color: white; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .slider-box input { flex: 1; }
+
+        .shutter-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 15; }
+        .shutter-btn { width: 58px; height: 58px; border-radius: 50%; background: white; border: 4px solid var(--primary); cursor: pointer; display: flex; justify-content: center; align-items: center; }
+        .shutter-inner { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); }
+
+        /* 4. Lock-Ring Notice Screen */
+        .notice-container { flex: 1; padding: 18px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+        .card-box { background: white; border-radius: 12px; padding: 16px; border: 1px solid var(--line-color); box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .card-box.alert { border-left: 5px solid var(--danger); }
+        .card-box h3 { font-size: 15.5px; font-weight: 900; color: #b71c1c; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .card-box p { font-size: 13px; color: var(--text-dark); line-height: 1.5; font-weight: 600; }
+        .pipe-compare { display: flex; justify-content: space-around; margin: 12px 0; background: #fff5f5; padding: 12px; border-radius: 8px; border: 1px dashed #ef9a9a; }
+        .pipe-item { text-align: center; }
+        .pipe-tag { font-size: 14px; font-weight: 900; color: var(--danger); }
+        .pipe-desc { font-size: 11px; color: #666; font-weight: 600; margin-top: 4px; }
+
+        /* Interactive Hotspot Fridge Box */
+        .interactive-fridge-container { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+        .fridge-view-box { position: relative; width: 100%; height: 230px; background: #eef1f4; border-radius: 12px; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1.5px solid #d0d5dd; }
+        .fridge-base-img { width: 100%; height: 100%; object-fit: contain; opacity: 0.9; }
+
+        .hotspot-pin { position: absolute; transform: translate(-50%, -50%); cursor: pointer; display: flex; flex-direction: column; align-items: center; z-index: 10; }
+        .hotspot-pin .pin-pulse { width: 18px; height: 18px; border-radius: 50%; background: #0076FF; box-shadow: 0 0 0 0 rgba(0, 118, 255, 0.7); animation: pulse 1.6s infinite; border: 2px solid #ffffff; }
+        .hotspot-pin.active .pin-pulse { background: #dc3545; box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.7); }
+        .hotspot-pin .pin-label { font-size: 10px; font-weight: 800; color: #111; background: rgba(255,255,255,0.95); padding: 2px 5px; border-radius: 4px; margin-top: 2px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+
+        .pin-door-gap { top: 22%; left: 50%; }
+        .pin-depth { top: 48%; left: 32%; }
+        .pin-leg-left { bottom: 10%; left: 24%; }
+        .pin-leg-right { bottom: 10%; left: 76%; }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 118, 255, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 8px rgba(0, 118, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 118, 255, 0); }
+        }
+
+        .state-selector-bar { display: flex; gap: 8px; }
+        .state-btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 900; border: 1.5px solid #d0d5dd; background: #fff; cursor: pointer; color: #555; }
+        .state-btn.active { background: #0076FF; color: white; border-color: #0076FF; }
+
+        .action-guide-card { background: white; border-radius: 12px; padding: 14px; border: 1.5px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04); }
+        .guide-action-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .target-title { font-size: 15px; font-weight: 900; color: #111; }
+        .manual-tag { font-size: 11px; font-weight: 800; background: #eef5ff; color: #0076FF; padding: 3px 6px; border-radius: 4px; }
+        .guide-visual-area { height: 150px; background: #f8fafc; border-radius: 8px; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; border: 1px dashed #cbd5e1; overflow: hidden; }
+        .guide-visual-area img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+        .guide-media-fallback { padding: 12px; text-align: center; font-size: 13px; line-height: 1.5; color: var(--text-sub); }
+        .guide-text-desc { font-size: 12.5px; color: #475569; line-height: 1.5; }
+
+
+        /* Guide & Pass Screen */
+        .guide-container { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .status-badge { background: #ffebee; color: var(--danger); font-size: 13.5px; font-weight: 900; padding: 8px 12px; border-radius: 8px; text-align: center; }
+
+        #pass-screen { background: #ffffff; justify-content: center; align-items: center; text-align: center; padding: 30px; }
+        .pass-title { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 8px; }
+        .pass-sub { font-size: 14px; color: var(--text-sub); font-weight: 800; margin-bottom: 25px; }
+
+        /* Exit Screen */
+        #exit-screen { background: #ffffff; justify-content: center; align-items: center; text-align: center; padding: 30px; }
+        .exit-icon { font-size: 48px; margin-bottom: 16px; }
+        .exit-title { font-size: 20px; font-weight: 900; color: var(--text-dark); margin-bottom: 10px; line-height: 1.4; }
+        .exit-sub { font-size: 13px; color: var(--text-sub); margin-bottom: 35px; }
+        .exit-btn-group { display: flex; gap: 10px; width: 100%; max-width: 300px; }
+        .btn-half { flex: 1; padding: 14px 0; border-radius: 10px; font-size: 15px; font-weight: 900; cursor: pointer; border: none; }
+        .btn-cancel { background: #eeeeee; color: #444; }
+        .btn-confirm { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="phone-frame">
+    <!-- 1. Splash Screen -->
+    <div id="splash-screen" class="screen active">
+        <div class="splash-top">수리 전 완벽했던 그 수평 그대로!</div>
+        <div class="splash-img-box">
+            <img src="fridge_fit_main.png" alt="비스포크 인피니트 라인" onerror="this.onerror=null; this.src='icon.png';">
+        </div>
+        <div class="splash-title">DDak-Fit<span>(딱-핏)</span></div>
+        <div class="splash-sub">냉장고 수리 복귀 정밀 수평 가이드</div>
+        <div class="splash-footer">Made by 디지털남울산센터</div>
+    </div>
+
+    <!-- 2. Ready Screen -->
+    <div id="ready-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box">
+                <div class="brand-title">DDak-Fit</div>
+                <div class="brand-sub">수평 복귀 준비</div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="openManualDirect()">📖 매뉴얼</button>
+                <button class="header-btn" onclick="openExitScreen()">⏻</button>
+            </div>
+        </div>
+        <div class="ready-content">
+            <div class="ready-card">
+                <div class="ready-badge">STEP 1</div>
+                <div class="ready-title">냉장고를 빼내기 전,<br>원래 설치 상태를 촬영합니다.</div>
+                <div class="ready-desc">
+                    수리 전 설치 상태를 기준으로 남기고, 재안착 후 가구장과 냉장고 문 외곽을 비교합니다.
+                </div>
+                <div class="ready-notice">
+                    💡 <strong>촬영 필수 가이드:</strong><br>
+                    가구장 개구부 네 모서리와 냉장고 문 외곽이 모두 보이도록 정면에서 촬영하세요. 수리 후에도 같은 렌즈와 위치에서 촬영해 주세요.
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="main-action-btn" onclick="startCamera(1)">1차 원상태 수평 촬영 시작</button>
+                <button class="sub-action-btn" onclick="openManualDirect()">📖 수평/단차 조치 매뉴얼 바로보기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Camera Screen 1 (Before Capture) -->
+    <div id="camera1-screen" class="screen">
+        <div class="camera-container">
+            <video id="videoFeed" playsinline autoplay muted></video>
+            <button type="button" class="camera-back" onclick="leaveCamera(1)">뒤로</button>
+            <div class="camera-overlay">
+                <div class="level-bar">
+                    <div id="levelDot1" class="level-dot"></div>
+                    <span id="levelText1">휴대폰 기울기 센서 대기 중</span>
+                </div>
+                <div class="grid-line-h top"></div>
+                <div class="grid-line-h mid"></div>
+                <div class="grid-line-h bottom"></div>
+                <div class="grid-line-v left"></div>
+                <div class="grid-line-v center"></div>
+                <div class="grid-line-v right"></div>
+            </div>
+            <div class="shutter-bar">
+                <button class="shutter-btn" onclick="takeBeforePhoto()" aria-label="수리 전 사진 촬영">
+                    <div class="shutter-inner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Lock-Ring Notice Screen -->
+    <div id="notice-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box">
+                <div class="brand-title">DDak-Fit</div>
+                <div class="brand-sub">수리 진행 & 주의사항</div>
+            </div>
+            <div class="header-actions">
+                <button class="header-btn" onclick="openManualDirect()">📖</button>
+                <button class="header-btn" onclick="openExitScreen()">⏻</button>
+            </div>
+        </div>
+        <div class="notice-container">
+            <div class="card-box" style="border-left: 5px solid var(--success);">
+                <h3 style="color:var(--success);">📸 1차 기준 사진 등록 완료</h3>
+                <p>기준 사진과 가구장·도어 표시가 등록되었습니다.<br>이제 안심하고 냉장고를 빼내어 콤프레셔 수리를 진행하세요.</p>
+            </div>
+
+            <div class="card-box alert">
+                <h3>⚠️ 락링 수리 필수 체크 (딱-링 연계)</h3>
+                <p>냉장고 콤프레셔 락링 교체 시 아래 항목을 반드시 사전 확인하세요.</p>
+                <div class="pipe-compare">
+                    <div class="pipe-item">
+                        <div class="pipe-tag">Ø 4.20</div>
+                        <div class="pipe-desc">드라이어 / 응축기</div>
+                    </div>
+                    <div style="font-weight:900; color:#aaa; align-self:center;">VS</div>
+                    <div class="pipe-item">
+                        <div class="pipe-tag">Ø 4.00</div>
+                        <div class="pipe-desc">혼선 체결 금지!</div>
+                    </div>
+                </div>
+                <p style="font-size:12px; color:#c62828;">
+                    * 배관 파이 4.20과 4.00 규격 혼동으로 인한 냉매 누설이 잦으니 버니어 캘리퍼스 또는 <strong>'딱-링' 자재코드 가이드</strong>를 재확인하세요!
+                </p>
+            </div>
+
+            <div class="card-box">
+                <h3 style="color:#333;">🛠️ 제품 재안착 시 체크리스트</h3>
+                <p>1. 후면 급수호스 및 바닥 매립관 간섭 여부 (p.69)</p>
+                <p>2. 바닥 가이드 레일 안착 및 후면 Caster 밀착 (p.66~67)</p>
+                <p>3. 후면 벌어짐 방지 브라켓 정상 결합 (p.77)</p>
+            </div>
+
+            <button class="main-action-btn" style="margin-top:auto;" onclick="startCamera(2)">수리 완료 후 2차 비교 촬영</button>
+        </div>
+    </div>
+
+    <!-- 5. Camera Screen 2 (After - Reference Photo Overlay) -->
+    <div id="camera2-screen" class="screen">
+        <div class="camera-container">
+            <video id="videoFeed2" playsinline autoplay muted></video>
+            <img id="ghostImg" class="ghost-overlay" src="" alt="Ghost">
+            <button type="button" class="camera-back" onclick="leaveCamera(2)">뒤로</button>
+            <label class="camera-back auto-shot-toggle"><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
+            
+            <div class="camera-overlay">
+                <div class="level-bar">
+                    <span id="afterCameraHint">기준 사진과 가구장 선을 맞춰 주세요</span>
+                </div>
+                <div class="grid-line-h top"></div>
+                <div class="grid-line-h mid"></div>
+                <div class="grid-line-h bottom"></div>
+                <div class="grid-line-v left"></div>
+                <div class="grid-line-v center"></div>
+                <div class="grid-line-v right"></div>
+            </div>
+            
+            <div class="slider-box">
+                <span>음영 투명도</span>
+                <input type="range" id="ghostOpacity" min="10" max="90" value="45" oninput="changeGhostOpacity(this.value)">
+            </div>
+
+            <div class="shutter-bar">
+                <button class="shutter-btn" onclick="takeAfterPhoto()" aria-label="수리 후 사진 촬영">
+                    <div class="shutter-inner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="mark-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box">
+                <div class="brand-title">DDak-Fit</div>
+                <div id="markTitle" class="brand-sub">사진 기준점 표시</div>
+            </div>
+            <button class="header-btn" onclick="startCamera(markStep)">다시 촬영</button>
+        </div>
+        <div class="mark-content">
+            <p>가구장 개구부의 같은 면에 있는 네 모서리와 냉장고 문 전체의 대각선 모서리 두 곳을 표시하세요. 수리 전후 같은 지점을 눌러주세요.</p>
+            <p id="markPrompt" aria-live="polite"></p>
+            <canvas id="markCanvas" aria-label="사진에서 가구장과 도어 모서리 표시"></canvas>
+            <div class="btn-group">
+                <button id="markSave" class="main-action-btn" onclick="saveMarks()" disabled>표시 완료</button>
+                <button class="sub-action-btn" onclick="undoMark()">마지막 표시 취소</button>
+                <button class="sub-action-btn" onclick="skipMarks()">기준점이 보이지 않아요</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Adjustment Guide Screen (Fail 시 진입 & Direct Manual 통합 화면) -->
+    <div id="guide-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box">
+                <div class="brand-title">DDak-Fit</div>
+                <div id="guideHeaderSub" class="brand-sub">수평/단차 터치 가이드</div>
+            </div>
+            <button class="header-btn" onclick="closeManualDirect()">✕ 닫기</button>
+        </div>
+        <div class="guide-container">
+            <div class="status-badge" id="failReasonText" style="display:none;">⚠️ 우측 기울어짐 및 단차 감지</div>
+
+            <!-- Interactive Hotspot Fridge Box -->
+            <div class="interactive-fridge-container">
+                <div class="fridge-view-box">
+                    <img src="fridge_fit_main.png" class="fridge-base-img" alt="냉장고 전면">
+
+                    <!-- Hotspot Pins -->
+                    <div class="hotspot-pin pin-door-gap" onclick="selectSpot('door_gap')">
+                        <span class="pin-pulse"></span>
+                        <span class="pin-label">상하단차</span>
+                    </div>
+                    <div class="hotspot-pin pin-depth" onclick="selectSpot('depth')">
+                        <span class="pin-pulse"></span>
+                        <span class="pin-label">전후돌출</span>
+                    </div>
+                    <div class="hotspot-pin pin-leg-left" onclick="selectSpot('leg_left')">
+                        <span class="pin-pulse"></span>
+                        <span class="pin-label">좌측다리</span>
+                    </div>
+                    <div class="hotspot-pin pin-leg-right" onclick="selectSpot('leg_right')">
+                        <span class="pin-pulse"></span>
+                        <span class="pin-label">우측다리</span>
+                    </div>
+                </div>
+
+                <!-- State Toggle -->
+                <div class="state-selector-bar">
+                    <button id="btnStateLow" class="state-btn active" onclick="setPartState('low')">해당 부위가 낮음/들어감 ▼</button>
+                    <button id="btnStateHigh" class="state-btn" onclick="setPartState('high')">해당 부위가 높음/튀어나옴 ▲</button>
+                </div>
+
+                <!-- Action Card -->
+                <div class="action-guide-card">
+                    <div class="guide-action-header">
+                        <span id="guideTargetTitle" class="target-title">우측 Leg(다리) 조치법</span>
+                        <span id="guideManualTag" class="manual-tag">매뉴얼 p.78</span>
+                    </div>
+                    <div class="guide-visual-area" id="guideVisualArea">
+                    </div>
+                    <div id="guideTextDesc" class="guide-text-desc">
+                    </div>
+                </div>
+            </div>
+
+            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;" onclick="startCamera(2)">조정 후 다시 촬영</button>
+        </div>
+    </div>
+
+    <!-- 7. Comparison Result -->
+    <div id="pass-screen" class="screen">
+        <div id="resultTitle" class="pass-title" aria-live="polite"></div>
+        <div id="resultDetail" class="pass-sub"></div>
+        <div class="btn-group">
+            <button class="main-action-btn" onclick="startCamera(2)">수리 후 다시 촬영</button>
+            <button class="sub-action-btn" onclick="openManualDirect()">수평·단차 가이드 보기</button>
+            <button class="sub-action-btn" onclick="openExitScreen()">작업 종료</button>
+        </div>
+    </div>
+
+    <!-- 8. Exit Screen -->
+    <div id="exit-screen" class="screen">
+        <div class="exit-icon">🛠️</div>
+        <div class="exit-title">DDak-Fit 작업을<br>종료하시겠습니까?</div>
+        <div class="exit-sub">종료하면 현재 작업의 촬영 내용과 표시가 지워집니다.</div>
+        <div class="exit-btn-group">
+            <button class="btn-half btn-cancel" onclick="cancelExit()">취소</button>
+            <button class="btn-half btn-confirm" onclick="confirmExit()">종료</button>
+        </div>
+    </div>
+</div>
+
+<canvas id="calcCanvas" style="display:none;"></canvas>
+
+<script>
+    let beforePhoto = null;
+    let beforeMarks = null;
+    let activeCameraStream = null;
+    let cameraRequest = 0;
+    let previousScreen = 'ready-screen';
+    let screenBeforeExit = 'ready-screen';
+    let markStep = 1;
+    let markPhoto = null;
+    let marks = [];
+
+    const markLabels = ['가구장 좌상단', '가구장 우상단', '가구장 우하단', '가구장 좌하단', '냉장고 문 전체 좌상단', '냉장고 문 전체 우하단'];
+
+    // Interactive Guide Data Dictionary
+    let currentSelectedPart = 'leg_right';
+    let currentSelectedState = 'low';
+
+    const guideData = {
+        leg_right: {
+            title: "우측 Leg(다리) 높낮이 조절",
+            manual: "매뉴얼 p.78",
+            low: {
+                animText: "시계 방향 회전 (다리 올림)",
+                desc: "우측이 낮습니다. (-) 드라이버나 첼라로 다리를 <strong>시계 방향(↷)</strong>으로 돌려 우측을 올려주세요.",
+                gifUrl: "leg_adjust.gif"
+            },
+            high: {
+                animText: "반시계 방향 회전 (다리 낮춤)",
+                desc: "우측이 높습니다. (-) 드라이버나 첼라로 다리를 <strong>반시계 방향(↶)</strong>으로 돌려 우측을 내려주세요.",
+                gifUrl: "leg_adjust.gif"
+            }
+        },
+        leg_left: {
+            title: "좌측 Leg(다리) 높낮이 조절",
+            manual: "매뉴얼 p.78",
+            low: {
+                animText: "시계 방향 회전 (다리 올림)",
+                desc: "좌측이 낮습니다. (-) 드라이버나 첼라로 다리를 <strong>시계 방향(↷)</strong>으로 돌려 좌측을 올려주세요.",
+                gifUrl: "leg_adjust.gif"
+            },
+            high: {
+                animText: "반시계 방향 회전 (다리 낮춤)",
+                desc: "좌측이 높습니다. (-) 드라이버나 첼라로 다리를 <strong>반시계 방향(↶)</strong>으로 돌려 좌측을 내려주세요.",
+                gifUrl: "leg_adjust.gif"
+            }
+        },
+        door_gap: {
+            title: "도어 상/하 높낮이 단차",
+            manual: "매뉴얼 p.85~88",
+            low: {
+                animText: "단차 패드 삽입 (도어 올림)",
+                desc: "해당 도어가 낮습니다. 도어 고정볼트 4개를 살짝 푼 뒤 하단에 <strong>단차 패드(T1~T2.5)를 삽입</strong>하고 4mm 육각렌치로 조절볼트를 조여주세요.",
+                gifUrl: "pad_insert.gif"
+            },
+            high: {
+                animText: "상대 도어 조절볼트 풀기 (도어 낮춤)",
+                desc: "해당 도어가 상대적으로 높습니다. 반대편 도어에 단차 패드를 덧대거나 <strong>조절볼트를 풀어</strong> 높이를 평행하게 맞추세요.",
+                gifUrl: "bolt_loosen.gif"
+            }
+        },
+        depth: {
+            title: "도어 전/후 돌출 단차",
+            manual: "매뉴얼 p.90",
+            low: {
+                animText: "가구장 8mm 기준 맞춤 (당김)",
+                desc: "도어가 너무 안으로 들어갔습니다. 조임너트를 풀고 전후 조절나사를 돌려 가구장 기준 <strong>8mm 돌출 라인</strong>으로 당겨 맞추세요.",
+                gifUrl: "depth_pull.gif"
+            },
+            high: {
+                animText: "조절나사 회전 (안으로 넣기)",
+                desc: "도어가 앞으로 튀어나왔습니다(돌출). 도어 안쪽 조임너트를 반시계로 푼 후 단차 조절나사를 회전시켜 도어를 안쪽으로 밀어 넣으세요.",
+                gifUrl: "depth_push.gif"
+            }
+        }
+    };
+
+    function selectSpot(partKey) {
+        currentSelectedPart = partKey;
+        document.querySelectorAll('.hotspot-pin').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.pin-${partKey.replace('_', '-')}`)?.classList.add('active');
+        updateGuideCard();
+    }
+
+    function setPartState(state) {
+        currentSelectedState = state;
+        document.getElementById('btnStateLow').className = state === 'low' ? 'state-btn active' : 'state-btn';
+        document.getElementById('btnStateHigh').className = state === 'high' ? 'state-btn active' : 'state-btn';
+        updateGuideCard();
+    }
+
+    function updateGuideCard() {
+        const part = guideData[currentSelectedPart];
+        const info = part[currentSelectedState];
+
+        document.getElementById('guideTargetTitle').innerText = part.title;
+        document.getElementById('guideManualTag').innerText = part.manual;
+        
+        const visualArea = document.getElementById('guideVisualArea');
+        visualArea.innerHTML = ''; 
+
+        const gifImg = document.createElement('img');
+        gifImg.alt = info.animText;
+        gifImg.addEventListener('error', () => {
+            if (gifImg.parentNode !== visualArea) return;
+            const fallback = document.createElement('p');
+            fallback.className = 'guide-media-fallback';
+            fallback.textContent = info.animText + ' · 가이드 영상을 불러올 수 없습니다. 아래 설명을 확인해 주세요.';
+            gifImg.replaceWith(fallback);
+        }, { once: true });
+        visualArea.appendChild(gifImg);
+        gifImg.src = info.gifUrl;
+
+        document.getElementById('guideTextDesc').innerHTML = info.desc;
+    }
+
+    // Splash Screen
+    setTimeout(() => {
+        showScreen('ready-screen');
+    }, 2500);
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+        history.pushState({ screen: screenId }, '');
+    }
+
+    function openManualDirect() {
+        const activeEl = document.querySelector('.screen.active');
+        if (activeEl) previousScreen = activeEl.id;
+        
+        document.getElementById('failReasonText').style.display = 'none';
+        document.getElementById('guideHeaderSub').innerText = '수평/단차 터치 가이드';
+        document.getElementById('guideRetryBtn').style.display = beforePhoto ? 'block' : 'none';
+        
+        selectSpot('leg_right');
+        showScreen('guide-screen');
+    }
+
+    function closeManualDirect() {
+        showScreen(previousScreen || 'ready-screen');
+    }
+
+    window.addEventListener('popstate', function(e) {
+        const exitScreen = document.getElementById('exit-screen');
+        const guideScreen = document.getElementById('guide-screen');
+
+        if (guideScreen.classList.contains('active') && previousScreen === 'ready-screen') {
+            closeManualDirect();
+            return;
+        }
+
+        if (exitScreen.classList.contains('active')) {
+            cancelExit();
+            return;
+        }
+        openExitScreen();
+    });
+
+    // Device Tilt Listener
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', function(e) {
+            if (!Number.isFinite(e.gamma)) return;
+            const currentTiltAngle = Math.round(e.gamma * 10) / 10;
+            const isLevel = Math.abs(currentTiltAngle) <= 1.0;
+
+            const dot1 = document.getElementById('levelDot1');
+            const text1 = document.getElementById('levelText1');
+            if (dot1 && text1) {
+                dot1.className = isLevel ? 'level-dot' : 'level-dot tilt';
+                text1.innerText = `휴대폰 기울기: ${currentTiltAngle > 0 ? '+' : ''}${currentTiltAngle}° ${isLevel ? '(촬영 자세 양호)' : '(기울어짐)'}`;
+            }
+
+        });
+    }
+
+    function stopCamera() {
+        cameraRequest++;
+        if (activeCameraStream) activeCameraStream.getTracks().forEach(track => track.stop());
+        activeCameraStream = null;
+    }
+
+    function leaveCamera(step) {
+        stopCamera();
+        showScreen(step === 1 ? 'ready-screen' : 'notice-screen');
+    }
+
+    async function startCamera(step) {
+        if (step === 2 && !beforePhoto) return;
+        stopCamera();
+        const request = cameraRequest;
+        const screenId = step === 1 ? 'camera1-screen' : 'camera2-screen';
+        const video = document.getElementById(step === 1 ? 'videoFeed' : 'videoFeed2');
+        const shutter = document.querySelector('#' + screenId + ' .shutter-btn');
+        shutter.disabled = true;
+        if (step === 2) document.getElementById('afterCameraHint').textContent = '기준 사진과 가구장 선을 맞춰 주세요';
+        showScreen(screenId);
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
+            if (request !== cameraRequest) {
+                stream.getTracks().forEach(track => track.stop());
+                return;
+            }
+            activeCameraStream = stream;
+            video.srcObject = stream;
+            await video.play();
+            if (request !== cameraRequest) return;
+            shutter.disabled = false;
+            if (step === 2) watchAutoShot(video, request);
+        } catch {
+            if (request !== cameraRequest) return;
+            alert('카메라를 열 수 없습니다. 브라우저의 카메라 권한과 HTTPS 접속을 확인해 주세요.');
+            leaveCamera(step);
+        }
+    }
+
+    // The preview similarity can trigger the shutter, but never determines the result.
+    function watchAutoShot(video, request) {
+        const sample = document.createElement('canvas');
+        sample.width = 96;
+        sample.height = Math.max(1, Math.round(96 * beforePhoto.naturalHeight / beforePhoto.naturalWidth));
+        const ctx = sample.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(beforePhoto, 0, 0, sample.width, sample.height);
+        const reference = ctx.getImageData(0, 0, sample.width, sample.height).data;
+        const toggle = document.getElementById('autoShot');
+        const hint = document.getElementById('afterCameraHint');
+        let matchingSince = null;
+
+        function checkFrame() {
+            if (request !== cameraRequest) return;
+            if (toggle.checked && video.readyState >= 2) {
+                ctx.drawImage(video, 0, 0, sample.width, sample.height);
+                const pixels = ctx.getImageData(0, 0, sample.width, sample.height).data;
+                let difference = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    difference += Math.abs(pixels[i] - reference[i]) +
+                        Math.abs(pixels[i + 1] - reference[i + 1]) +
+                        Math.abs(pixels[i + 2] - reference[i + 2]);
+                }
+                if (difference / (pixels.length * 0.75) < 28) {
+                    matchingSince ??= Date.now();
+                    hint.textContent = '자동 촬영 준비 중 · 그대로 유지하세요';
+                    if (Date.now() - matchingSince >= 500) {
+                        takeAfterPhoto();
+                        return;
+                    }
+                    setTimeout(checkFrame, 120);
+                    return;
+                }
+            }
+            matchingSince = null;
+            hint.textContent = '기준 사진과 가구장 선을 맞춰 주세요';
+            setTimeout(checkFrame, 120);
+        }
+
+        checkFrame();
+    }
+
+    function captureFrame(video) {
+        if (!activeCameraStream || video.readyState < 2 || !video.videoWidth) return null;
+        const canvas = document.getElementById('calcCanvas');
+        const scale = Math.min(1, 960 / Math.max(video.videoWidth, video.videoHeight));
+        canvas.width = Math.round(video.videoWidth * scale);
+        canvas.height = Math.round(video.videoHeight * scale);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const photo = new Image();
+        photo.src = canvas.toDataURL('image/jpeg', 0.9);
+        return photo;
+    }
+
+    async function takePhoto(step) {
+        const video = document.getElementById(step === 1 ? 'videoFeed' : 'videoFeed2');
+        const photo = captureFrame(video);
+        if (!photo) return;
+        stopCamera();
+        const request = cameraRequest;
+        try {
+            await photo.decode();
+        } catch {
+            if (request === cameraRequest) {
+                alert('사진을 불러오지 못했습니다. 다시 촬영해 주세요.');
+                leaveCamera(step);
+            }
+            return;
+        }
+        if (request === cameraRequest) openMarks(step, photo);
+    }
+
+    function takeBeforePhoto() { return takePhoto(1); }
+    function takeAfterPhoto() { return takePhoto(2); }
+
+    function changeGhostOpacity(val) {
+        document.getElementById('ghostImg').style.opacity = val / 100;
+    }
+
+    function openMarks(step, photo) {
+        markStep = step;
+        markPhoto = photo;
+        marks = [];
+        const canvas = document.getElementById('markCanvas');
+        canvas.width = photo.naturalWidth;
+        canvas.height = photo.naturalHeight;
+        document.getElementById('markTitle').textContent = step === 1 ? '수리 전 기준점 표시' : '수리 후 기준점 표시';
+        showScreen('mark-screen');
+        drawMarks();
+    }
+
+    function drawMarks() {
+        const canvas = document.getElementById('markCanvas');
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(markPhoto, 0, 0, canvas.width, canvas.height);
+        const radius = Math.max(canvas.width, canvas.height) / 80;
+        marks.forEach(([x, y], index) => {
+            ctx.beginPath();
+            ctx.arc(x * canvas.width, y * canvas.height, radius, 0, 2 * Math.PI);
+            ctx.fillStyle = index < 4 ? '#076bce' : '#137a41';
+            ctx.fill();
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = radius / 6;
+            ctx.stroke();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold ' + radius * 1.2 + 'px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(index + 1, x * canvas.width, y * canvas.height);
+        });
+        const complete = marks.length === markLabels.length;
+        document.getElementById('markSave').disabled = !complete;
+        document.getElementById('markPrompt').textContent = complete
+            ? '표시를 확인한 뒤 완료를 눌러주세요.'
+            : (marks.length + 1) + '/6 · ' + markLabels[marks.length] + '을 눌러주세요.';
+    }
+
+    document.getElementById('markCanvas').addEventListener('click', event => {
+        if (marks.length === markLabels.length) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        marks.push([(event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height]);
+        drawMarks();
+    });
+
+    function undoMark() {
+        marks.pop();
+        drawMarks();
+    }
+
+    // Map the stationary cabinet opening to a unit rectangle, then compare the door.
+    function measureDoor(points) {
+        const [a, b, c, d, topLeft, bottomRight] = points;
+        const corners = [a, b, c, d];
+        const clockwise = corners.every(([x, y], index) => {
+            const next = corners[(index + 1) % 4];
+            const last = corners[(index + 2) % 4];
+            return (next[0] - x) * (last[1] - next[1]) - (next[1] - y) * (last[0] - next[0]) > 0.01;
+        });
+        if (!clockwise || b[0] <= a[0] || d[1] <= a[1]) return null;
+
+        // Basis vectors and perspective terms of the square-to-cabinet transform.
+        const dx1 = b[0] - c[0], dy1 = b[1] - c[1];
+        const dx2 = d[0] - c[0], dy2 = d[1] - c[1];
+        const dx3 = a[0] - b[0] + c[0] - d[0];
+        const dy3 = a[1] - b[1] + c[1] - d[1];
+        const determinant = dx1 * dy2 - dx2 * dy1;
+        const g = (dx3 * dy2 - dx2 * dy3) / determinant;
+        const h = (dx1 * dy3 - dx3 * dy1) / determinant;
+        const bx = b[0] * (1 + g) - a[0], by = b[1] * (1 + g) - a[1];
+        const dx = d[0] * (1 + h) - a[0], dy = d[1] * (1 + h) - a[1];
+
+        function rectify([x, y]) {
+            const m = bx - x * g, n = dx - x * h;
+            const p = by - y * g, q = dy - y * h;
+            const det = m * q - n * p;
+            return [((x - a[0]) * q - n * (y - a[1])) / det, (m * (y - a[1]) - p * (x - a[0])) / det];
+        }
+
+        const [left, top] = rectify(topLeft);
+        const [right, bottom] = rectify(bottomRight);
+        const width = right - left, height = bottom - top;
+        const sizeIsPlausible = [width, height].every(size => size >= 0.35 && size <= 1.5);
+        if (!sizeIsPlausible || left < -0.3 || top < -0.3 || right > 1.3 || bottom > 1.3) return null;
+        return {
+            width, height, centerX: (left + right) / 2, centerY: (top + bottom) / 2, g, h,
+            framing: [(a[0] + c[0]) / 2, (a[1] + c[1]) / 2, c[0] - a[0], c[1] - a[1]]
+        };
+    }
+
+    function compareDoors(before, after) {
+        if (!before || !after) return 'uncertain';
+        if (after.framing.some((value, index) => Math.abs(value - before.framing[index]) > 0.08)) return 'uncertain';
+        if (Math.abs(after.g - before.g) > 0.08 || Math.abs(after.h - before.h) > 0.08) return 'uncertain';
+        const widthChange = after.width / before.width - 1;
+        const heightChange = after.height / before.height - 1;
+        const centerShift = Math.hypot(after.centerX - before.centerX, after.centerY - before.centerY);
+        // Provisional screen-space thresholds, pending field calibration.
+        if (centerShift > 0.025) return 'uncertain';
+        if (Math.max(Math.abs(widthChange), Math.abs(heightChange)) <= 0.012) return 'similar';
+        if (Math.min(Math.abs(widthChange), Math.abs(heightChange)) >= 0.025 &&
+            Math.abs(widthChange - heightChange) <= 0.02) return 'suspect';
+        return 'uncertain';
+    }
+
+    function registerBefore(measurement) {
+        beforePhoto = markPhoto;
+        beforeMarks = measurement;
+        document.getElementById('ghostImg').src = beforePhoto.src;
+        document.querySelector('#notice-screen .card-box h3').textContent = measurement
+            ? '📸 1차 기준 사진 및 기준점 등록 완료' : '📸 1차 기준 사진만 등록';
+        document.querySelector('#notice-screen .card-box p').textContent = measurement
+            ? '기준 사진과 가구장·도어 표시가 등록되었습니다.' : '사진은 겹쳐볼 수 있지만 가구장 기준 비교는 어렵습니다.';
+        showScreen('notice-screen');
+    }
+
+    function saveMarks() {
+        if (marks.length !== markLabels.length) return;
+        const measurement = measureDoor(marks);
+        if (!measurement) {
+            document.getElementById('markPrompt').textContent = '표시 위치를 확인하기 어렵습니다. 잘못 표시한 점을 취소하거나 사진을 다시 찍어주세요.';
+            return;
+        }
+        if (markStep === 1) registerBefore(measurement);
+        else showComparison(compareDoors(beforeMarks, measurement));
+    }
+
+    function skipMarks() {
+        if (markStep === 1) registerBefore(null);
+        else showComparison('uncertain');
+    }
+
+    function showComparison(result) {
+        const messages = {
+            similar: ['기준 사진과 유사', '표시한 문 외곽에서 뚜렷한 차이가 보이지 않습니다. 최종 돌출 상태는 현장에서 확인해 주세요.'],
+            suspect: ['돌출 변화 의심', '가구장 기준으로 문 외곽 크기가 달라 보입니다. 같은 위치에서 다시 찍거나 측면에서 확인해 주세요.'],
+            uncertain: ['사진만으로 확인 어려움', '촬영 위치나 기준점 차이 때문에 구분하기 어렵습니다. 같은 위치에서 다시 찍거나 측면에서 확인해 주세요.']
+        };
+        const [title, detail] = messages[result];
+        document.getElementById('resultTitle').textContent = title;
+        document.getElementById('resultDetail').textContent = detail;
+        showScreen('pass-screen');
+    }
+
+    function openExitScreen() {
+        screenBeforeExit = document.querySelector('.screen.active').id;
+        stopCamera();
+        showScreen('exit-screen');
+    }
+
+    function cancelExit() {
+        if (screenBeforeExit === 'camera1-screen') startCamera(1);
+        else if (screenBeforeExit === 'camera2-screen') startCamera(2);
+        else showScreen(screenBeforeExit);
+    }
+
+    function confirmExit() {
+        stopCamera();
+        document.body.innerHTML = '';
+        document.body.style.backgroundColor = '#000000';
+        window.close();
+    }
+</script>
+
+</body>
+</html>
