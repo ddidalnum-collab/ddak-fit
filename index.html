@@ -35,6 +35,7 @@
         .brand-title { font-size: 16px; font-weight: 900; color: var(--primary); letter-spacing: -0.5px; }
         .brand-sub { font-size: 12px; font-weight: bold; color: #555; background: #eef2f7; padding: 3px 6px; border-radius: 4px; }
         .header-actions { display: flex; gap: 12px; align-items: center; }
+        .header-exit { white-space: nowrap; }
         .header-btn { background: none; border: none; font-size: 15px; font-weight: bold; cursor: pointer; color: var(--text-sub); display: flex; align-items: center; }
 
         /* 1. Splash Screen */
@@ -61,7 +62,7 @@
 
         /* 3 & 5. Camera View */
         .camera-container { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        #videoFeed, #videoFeed2 { width: 100%; height: 100%; object-fit: cover; }
+        #videoFeed, #videoFeed2, #doorVideo { width: 100%; height: 100%; object-fit: cover; }
         .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; pointer-events: none; mix-blend-mode: screen; filter: drop-shadow(0 0 2px #00ff66); }
         
         .shutter-btn:disabled { opacity: 0.45; }
@@ -76,6 +77,8 @@
         .level-readings div { flex: 1; background: #eef5ff; padding: 12px; border-radius: 10px; text-align: center; }
         .level-readings strong { display: block; margin-top: 6px; color: var(--primary-dark); font-size: 24px; }
         .camera-back { position: absolute; top: 68px; left: 12px; z-index: 16; color: #fff; background: #242424; border: 0; border-radius: 8px; padding: 9px 12px; }
+        .camera-nav { display: flex; gap: 6px; padding: 0; background: transparent; }
+        .camera-nav button { color: #fff; background: #242424; border: 0; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
         .auto-shot-toggle { left: auto; right: 12px; font-size: 13px; }
         .level-bar { text-align: center; }
 
@@ -187,7 +190,7 @@
             </div>
             <div class="header-actions">
                 <button class="header-btn" onclick="openManualDirect()">📖 매뉴얼</button>
-                <button class="header-btn" onclick="openExitScreen()">⏻</button>
+                <button type="button" class="header-btn header-exit" onclick="openExitScreen()">종료</button>
             </div>
         </div>
         <div class="ready-content">
@@ -195,11 +198,11 @@
                 <div class="ready-badge">STEP 1</div>
                 <div class="ready-title">냉장고를 빼내기 전,<br>원래 설치 상태를 촬영합니다.</div>
                 <div class="ready-desc">
-                    수리 전 설치 상태를 사진으로 남기고, 재안착 후 주변 배경을 기준으로 냉장고 위치 변화를 자동 비교합니다.
+                    수리 전 설치 상태를 사진으로 남기고, 재안착 후 도어 하단 높이를 자동 판정하고 조정 가이드를 보여줍니다.
                 </div>
                 <div class="ready-notice">
                     💡 <strong>촬영 필수 가이드:</strong><br>
-                    냉장고가 화면 중앙의 절반 정도를 차지하도록 정면에서 찍고, 벽·바닥·가구장 등 주변 배경도 함께 담아주세요. 수리 후에도 같은 렌즈와 위치에서 촬영하세요.
+                    냉장고가 화면 중앙의 절반 정도를 차지하도록 정면 2m 이상 떨어져 찍고, 벽·바닥·가구장 등 주변 배경도 함께 담아주세요. 수리 후에도 같은 렌즈와 위치에서 촬영하세요.
                 </div>
             </div>
             <div class="btn-group">
@@ -214,7 +217,7 @@
     <div id="camera1-screen" class="screen">
         <div class="camera-container">
             <video id="videoFeed" playsinline autoplay muted></video>
-            <button type="button" class="camera-back" onclick="leaveCamera(1)">뒤로</button>
+            <button type="button" class="camera-back" onclick="returnHome()">처음으로</button>
             <div class="camera-overlay">
                 <div class="level-bar">
                     <div id="levelDot1" class="level-dot"></div>
@@ -243,8 +246,9 @@
                 <div class="brand-sub">수리 진행 & 주의사항</div>
             </div>
             <div class="header-actions">
+                <button class="header-btn" onclick="returnHome()">처음으로</button>
                 <button class="header-btn" onclick="openManualDirect()">📖</button>
-                <button class="header-btn" onclick="openExitScreen()">⏻</button>
+                <button type="button" class="header-btn header-exit" onclick="openExitScreen()">종료</button>
             </div>
         </div>
         <div class="notice-container">
@@ -253,35 +257,31 @@
                 <p>수리 전 사진이 등록되었습니다. 수리가 끝나면 같은 위치에서 다시 촬영해 주세요.</p>
             </div>
 
-            <details class="card-box">
-                <summary>모델별 수리·재안착 참고사항</summary>
-                <div class="card-box alert">
-                    <h3>⚠️ 락링 수리 필수 체크 (딱-링 연계)</h3>
-                    <p>냉장고 콤프레셔 락링 교체 시 아래 항목을 반드시 사전 확인하세요.</p>
-                    <div class="pipe-compare">
-                        <div class="pipe-item">
-                            <div class="pipe-tag">Ø 4.20</div>
-                            <div class="pipe-desc">드라이어 / 응축기</div>
-                        </div>
-                        <div style="font-weight:900; color:#aaa; align-self:center;">VS</div>
-                        <div class="pipe-item">
-                            <div class="pipe-tag">Ø 4.00</div>
-                            <div class="pipe-desc">혼선 체결 금지!</div>
-                        </div>
+            <div class="card-box alert">
+                <h3>⚠️ 락링 수리 필수 체크 (딱-링 연계)</h3>
+                <p>락링 수리 전 딱-링에서 정확한 부품 코드를 확인하고, 체결 전 락링 앞·뒤 방향을 확인하세요.</p>
+                <div class="pipe-compare">
+                    <div class="pipe-item">
+                        <div class="pipe-tag">Ø 4.20</div>
+                        <div class="pipe-desc">드라이어 / 응축기</div>
                     </div>
-                    <p style="font-size:12px; color:#c62828;">
-                        * 배관 파이 4.20과 4.00 규격 혼동으로 인한 냉매 누설이 잦으니 버니어 캘리퍼스 또는 <strong>'딱-링' 자재코드 가이드</strong>를 재확인하세요!
-                    </p>
+                    <div style="font-weight:900; color:#aaa; align-self:center;">VS</div>
+                    <div class="pipe-item">
+                        <div class="pipe-tag">Ø 4.00</div>
+                        <div class="pipe-desc">혼선 체결 금지!</div>
+                    </div>
                 </div>
+                <p style="font-size:12px; color:#c62828;">
+                    * 배관 파이 4.20과 4.00 규격 혼동으로 인한 냉매 누설이 잦으니 버니어 캘리퍼스 또는 <strong>'딱-링' 자재코드 가이드</strong>를 재확인하세요!
+                </p>
+            </div>
 
-                <div class="card-box">
-                    <h3 style="color:#333;">🛠️ 제품 재안착 시 체크리스트</h3>
-                    <p>1. 후면 급수호스 및 바닥 매립관 간섭 여부 (p.69)</p>
-                    <p>2. 바닥 가이드 레일 안착 및 후면 Caster 밀착 (p.66~67)</p>
-                    <p>3. 후면 벌어짐 방지 브라켓 정상 결합 (p.77)</p>
-                </div>
-
-            </details>
+            <div class="card-box">
+                <h3 style="color:#333;">🛠️ 제품 재안착 시 체크리스트</h3>
+                <p>1. 후면 급수호스 및 바닥 매립관 간섭 여부 (p.69)</p>
+                <p>2. 바닥 가이드 레일 안착 및 후면 Caster 밀착 (p.66~67)</p>
+                <p>3. 후면 벌어짐 방지 브라켓 정상 결합 (p.77)</p>
+            </div>
 
             <button class="main-action-btn" style="margin-top:auto;" onclick="startCamera(2)">수리 완료 후 2차 비교 촬영</button>
         </div>
@@ -292,12 +292,15 @@
         <div class="camera-container">
             <video id="videoFeed2" playsinline autoplay muted></video>
             <img id="ghostImg" class="ghost-overlay" src="" alt="Ghost">
-            <button type="button" class="camera-back" onclick="leaveCamera(2)">뒤로</button>
+            <div class="camera-back camera-nav">
+                <button type="button" onclick="leaveCamera(2)">뒤로</button>
+                <button type="button" onclick="returnHome()">처음으로</button>
+            </div>
             <label class="camera-back auto-shot-toggle"><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
             
             <div class="camera-overlay">
                 <div class="level-bar">
-                    <span id="afterCameraHint">기준 사진과 주변 배경을 맞춰 주세요</span>
+                    <span id="afterCameraHint" role="status">구도 맞추는 중</span>
                 </div>
                 <div class="grid-line-h top"></div>
                 <div class="grid-line-h mid"></div>
@@ -320,10 +323,44 @@
         </div>
     </div>
 
+    <div id="door-ready-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub">도어 하단 판정</div></div>
+            <button class="header-btn" onclick="returnHome()">처음으로</button>
+        </div>
+        <div class="ready-content">
+            <div class="ready-card">
+                <div class="ready-title">좌우 도어 하단을 정면에서 가까이 찍어주세요.</div>
+                <p class="ready-desc">비교할 두 도어가 만나는 틈을 가운데 세로선에, 두 도어의 하단을 가운데 가로선에 맞춰주세요. 발이나 바닥 선 대신 도어 끝이 선명하게 보여야 합니다.</p>
+            </div>
+            <button class="main-action-btn" onclick="startCamera(3)">도어 하단 촬영</button>
+        </div>
+    </div>
+
+    <div id="door-camera-screen" class="screen">
+        <div class="camera-container">
+            <video id="doorVideo" playsinline autoplay muted></video>
+            <div class="camera-back camera-nav">
+                <button type="button" onclick="leaveCamera(3)">뒤로</button>
+                <button type="button" onclick="returnHome()">처음으로</button>
+            </div>
+            <div class="camera-overlay">
+                <div class="level-bar">도어 하단은 가로선 · 도어 사이는 세로선</div>
+                <div class="grid-line-h mid"></div>
+                <div class="grid-line-v center"></div>
+            </div>
+            <div class="shutter-bar">
+                <button class="shutter-btn" onclick="takePhoto(3)" aria-label="도어 하단 촬영">
+                    <div class="shutter-inner"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="level-screen" class="screen">
         <div class="app-header">
             <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub">휴대폰 수평계</div></div>
-            <button class="header-btn" onclick="closeLevel()">닫기</button>
+            <button class="header-btn" onclick="closeLevel()">처음으로</button>
         </div>
         <div class="ready-content">
             <div class="ready-card">
@@ -345,11 +382,14 @@
                 <div class="brand-title">DDak-Fit</div>
                 <div id="guideHeaderSub" class="brand-sub">수평/단차 터치 가이드</div>
             </div>
-            <button class="header-btn" onclick="closeManualDirect()">✕ 닫기</button>
+            <div class="header-actions">
+                <button class="header-btn" onclick="returnHome()">처음으로</button>
+                <button class="header-btn" onclick="closeManualDirect()">닫기</button>
+            </div>
         </div>
         <div class="guide-container">
             <p class="ready-desc">아래 GIF는 빌트인 모델 조정 예시입니다. 다른 모델은 해당 제품 설명서를 확인하세요.</p>
-            <div class="status-badge" id="failReasonText" style="display:none;">⚠️ 우측 기울어짐 및 단차 감지</div>
+            <div class="status-badge" id="failReasonText" style="display:none;"></div>
 
             <!-- Interactive Hotspot Fridge Box -->
             <div class="interactive-fridge-container">
@@ -402,7 +442,7 @@
                 </div>
             </div>
 
-            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;" onclick="startCamera(2)">조정 후 다시 촬영</button>
+            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;" onclick="startCamera(3)">조정 후 도어 하단 다시 촬영</button>
         </div>
     </div>
 
@@ -423,8 +463,9 @@
             </label>
         </details>
         <div class="btn-group">
-            <button class="main-action-btn" onclick="startCamera(2)">수리 후 다시 촬영</button>
+            <button class="main-action-btn" onclick="startCamera(3)">도어 하단 다시 촬영</button>
             <button class="sub-action-btn" onclick="openManualDirect()">수평·단차 가이드 보기</button>
+            <button class="sub-action-btn" onclick="returnHome()">처음으로</button>
             <button class="sub-action-btn" onclick="openExitScreen()">작업 종료</button>
         </div>
     </div>
@@ -592,15 +633,15 @@
         history.pushState({ screen: screenId }, '');
     }
 
-    function openManualDirect() {
+    function openManualDirect(part = 'leg_right', showRetry = false) {
         const activeEl = document.querySelector('.screen.active');
         if (activeEl) previousScreen = activeEl.id;
         
         document.getElementById('failReasonText').style.display = 'none';
         document.getElementById('guideHeaderSub').innerText = '수평/단차 터치 가이드';
-        document.getElementById('guideRetryBtn').style.display = beforePhoto ? 'block' : 'none';
+        document.getElementById('guideRetryBtn').style.display = showRetry ? 'block' : 'none';
         
-        selectSpot('leg_right');
+        selectSpot(part);
         showScreen('guide-screen');
     }
 
@@ -651,25 +692,47 @@
         activeCameraStream = null;
     }
 
+    function returnHome() {
+        stopCamera();
+        levelRequest++;
+        clearTimeout(levelSignalTimer);
+        beforePhoto = null;
+        previousScreen = 'ready-screen';
+        screenBeforeExit = 'ready-screen';
+        for (const id of ['videoFeed', 'videoFeed2', 'doorVideo']) {
+            document.getElementById(id).srcObject = null;
+        }
+        for (const id of ['ghostImg', 'resultBeforePhoto', 'resultAfterPhoto']) {
+            document.getElementById(id).removeAttribute('src');
+        }
+        showScreen('ready-screen');
+    }
+
     function leaveCamera(step) {
         stopCamera();
-        showScreen(step === 1 ? 'ready-screen' : 'notice-screen');
+        showScreen(step === 1 ? 'ready-screen' : step === 2 ? 'notice-screen' : 'door-ready-screen');
     }
+
+    const cameraScreens = {
+        1: ['camera1-screen', 'videoFeed'],
+        2: ['camera2-screen', 'videoFeed2'],
+        3: ['door-camera-screen', 'doorVideo']
+    };
 
     async function startCamera(step) {
         if (step === 2 && !beforePhoto) return;
         stopCamera();
         const request = cameraRequest;
-        const screenId = step === 1 ? 'camera1-screen' : 'camera2-screen';
-        const video = document.getElementById(step === 1 ? 'videoFeed' : 'videoFeed2');
+        const [screenId, videoId] = cameraScreens[step];
+        const video = document.getElementById(videoId);
         const shutter = document.querySelector('#' + screenId + ' .shutter-btn');
         shutter.disabled = true;
-        if (step === 2) document.getElementById('afterCameraHint').textContent = '기준 사진과 주변 배경을 맞춰 주세요';
+        if (step === 2) document.getElementById('afterCameraHint').textContent = '구도 맞추는 중';
         showScreen(screenId);
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: { facingMode: { ideal: 'environment' }, width: { ideal: step === 3 ? 1920 : 1280 }, height: { ideal: step === 3 ? 1080 : 720 } },
                 audio: false
             });
             if (request !== cameraRequest) {
@@ -689,69 +752,84 @@
         }
     }
 
-    // The preview similarity can trigger the shutter, but never determines the result.
     function watchAutoShot(video, request) {
-        const sample = document.createElement('canvas');
-        sample.width = 96;
-        sample.height = Math.max(1, Math.round(96 * beforePhoto.naturalHeight / beforePhoto.naturalWidth));
-        const ctx = sample.getContext('2d', { willReadFrequently: true });
-        ctx.drawImage(beforePhoto, 0, 0, sample.width, sample.height);
-        const reference = ctx.getImageData(0, 0, sample.width, sample.height).data;
+        const ratio = beforePhoto.naturalWidth / beforePhoto.naturalHeight;
+        const width = Math.round(180 * Math.min(1, ratio));
+        const height = Math.round(180 * Math.min(1, 1 / ratio));
+        const readPixels = makePixelReader(width, height);
+        const reference = readPixels(beforePhoto);
         const toggle = document.getElementById('autoShot');
         const hint = document.getElementById('afterCameraHint');
         let matchingSince = null;
 
+        let lastSampleAt = null;
         function checkFrame() {
             if (request !== cameraRequest) return;
-            if (toggle.checked && video.readyState >= 2) {
-                ctx.drawImage(video, 0, 0, sample.width, sample.height);
-                const pixels = ctx.getImageData(0, 0, sample.width, sample.height).data;
-                let difference = 0;
-                for (let i = 0; i < pixels.length; i += 4) {
-                    difference += Math.abs(pixels[i] - reference[i]) +
-                        Math.abs(pixels[i + 1] - reference[i + 1]) +
-                        Math.abs(pixels[i + 2] - reference[i + 2]);
-                }
-                if (difference / (pixels.length * 0.75) < 28) {
-                    matchingSince ??= Date.now();
-                    hint.textContent = '자동 촬영 준비 중 · 그대로 유지하세요';
-                    if (Date.now() - matchingSince >= 500) {
-                        takeAfterPhoto();
-                        return;
-                    }
-                    setTimeout(checkFrame, 120);
+            const now = performance.now();
+            if (lastSampleAt !== null && now - lastSampleAt > 700) matchingSince = null;
+            lastSampleAt = now;
+            const ready = toggle.checked && !document.hidden && video.readyState >= 2 && video.videoWidth && video.videoHeight;
+            const sameRatio = ready && Math.abs(ratio / (video.videoWidth / video.videoHeight) - 1) <= .025;
+            const background = sameRatio && fitRegion(
+                matchRegions(reference, readPixels(video), width, height), width, height);
+            if (canAutoCapture(background, width, height)) {
+                matchingSince ??= now;
+                hint.textContent = '그대로 유지하세요';
+                if (now - matchingSince >= 1200) {
+                    hint.textContent = '자동 촬영';
+                    takeAfterPhoto(true);
                     return;
                 }
+            } else {
+                matchingSince = null;
+                hint.textContent = toggle.checked ? '구도 맞추는 중' : '구도를 맞춘 뒤 셔터를 눌러주세요';
             }
-            matchingSince = null;
-            hint.textContent = '기준 사진과 주변 배경을 맞춰 주세요';
-            setTimeout(checkFrame, 120);
+            setTimeout(checkFrame, 300);
         }
 
         checkFrame();
     }
 
-    function captureFrame(video) {
+    function canAutoCapture(background, width, height) {
+        if (!background || background.residual > .9) return false;
+        const {a, b, tx, ty} = background;
+        const dx = (a - 1) * width / 2 - b * height / 2 + tx;
+        const dy = b * width / 2 + (a - 1) * height / 2 + ty;
+        return Math.abs(dx) <= width * .025 && Math.abs(dy) <= height * .025 &&
+            Math.abs(Math.hypot(a, b) - 1) <= .027 && Math.abs(Math.atan2(b, a)) <= .025;
+    }
+
+    function captureFrame(video, closeup) {
         if (!activeCameraStream || video.readyState < 2 || !video.videoWidth) return null;
         const canvas = document.getElementById('calcCanvas');
-        const scale = Math.min(1, 960 / Math.max(video.videoWidth, video.videoHeight));
-        canvas.width = Math.round(video.videoWidth * scale);
-        canvas.height = Math.round(video.videoHeight * scale);
+        let width = video.videoWidth, height = video.videoHeight;
+        if (closeup && video.clientWidth && video.clientHeight) {
+            const visibleRatio = video.clientWidth / video.clientHeight;
+            width = Math.min(width, height * visibleRatio);
+            height = Math.min(height, width / visibleRatio);
+        }
+        const scale = Math.min(1, (closeup ? 1280 : 960) / Math.max(width, height));
+        canvas.width = Math.round(width * scale);
+        canvas.height = Math.round(height * scale);
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, (video.videoWidth - width) / 2, (video.videoHeight - height) / 2,
+            width, height, 0, 0, canvas.width, canvas.height);
         const photo = new Image();
         photo.src = canvas.toDataURL('image/jpeg', 0.9);
         return photo;
     }
 
-    async function takePhoto(step) {
-        const video = document.getElementById(step === 1 ? 'videoFeed' : 'videoFeed2');
-        const photo = captureFrame(video);
+    async function takePhoto(step, autoCaptured = false) {
+        const video = document.getElementById(cameraScreens[step][1]);
+        const photo = captureFrame(video, step === 3);
         if (!photo) return;
         stopCamera();
         const request = cameraRequest;
         try {
-            await photo.decode();
+            await Promise.all([
+                photo.decode(),
+                autoCaptured ? new Promise(resolve => setTimeout(resolve, 250)) : null
+            ]);
         } catch {
             if (request === cameraRequest) {
                 alert('사진을 불러오지 못했습니다. 다시 촬영해 주세요.');
@@ -764,40 +842,55 @@
             registerBefore(photo);
             return;
         }
-        let result = 'uncertain';
-        try {
-            result = comparePhotos(beforePhoto, photo);
-        } catch (error) {
-            console.warn('사진 자동 비교 실패', error);
+        if (step === 2) {
+            const after = document.getElementById('resultAfterPhoto');
+            document.getElementById('resultBeforePhoto').src = beforePhoto.src;
+            after.src = photo.src;
+            after.style.opacity = .5;
+            document.getElementById('resultBlend').value = 50;
+            showScreen('door-ready-screen');
+            return;
         }
-        showComparison(result, photo);
+        let result = 'retake';
+        try {
+            const {naturalWidth: width, naturalHeight: height} = photo;
+            result = judgeDoorEdges(makePixelReader(width, height)(photo), width, height);
+        } catch (error) {
+            console.warn('도어 하단 분석 실패', error);
+        }
+        showDoorResult(result);
     }
 
     function takeBeforePhoto() { return takePhoto(1); }
-    function takeAfterPhoto() { return takePhoto(2); }
+    function takeAfterPhoto(autoCaptured = false) { return takePhoto(2, autoCaptured); }
 
     function changeGhostOpacity(val) {
         document.getElementById('ghostImg').style.opacity = val / 100;
     }
 
-    function photoPixels(photo, width, height) {
+    function makePixelReader(width, height) {
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(photo, 0, 0, width, height);
-        const rgba = ctx.getImageData(0, 0, width, height).data;
-        return Float32Array.from({length: width * height}, (_, i) =>
-            .299 * rgba[i * 4] + .587 * rgba[i * 4 + 1] + .114 * rgba[i * 4 + 2]);
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        return photo => {
+            ctx.drawImage(photo, 0, 0, width, height);
+            const rgba = ctx.getImageData(0, 0, width, height).data;
+            const pixels = new Float32Array(width * height);
+            for (let i = 0; i < pixels.length; i++) {
+                pixels[i] = .299 * rgba[i * 4] + .587 * rgba[i * 4 + 1] + .114 * rgba[i * 4 + 2];
+            }
+            return pixels;
+        };
     }
 
-    // Compare distributed image features, using the center as the product
-    // region and the surrounding image as the stationary reference.
+    // Match stationary background features for the second overview capture.
     function matchRegions(before, after, width, height) {
         const radius = 4;
-        const search = Math.round(Math.min(width, height) * .075);
-        const margin = radius + search + 2;
-        const groups = { background: [], product: [] };
+        const searchX = Math.round(width * .11);
+        const searchY = Math.round(height * .11);
+        const margin = radius + 2;
+        const matches = [];
 
         function patch(image, x, y) {
             const values = [];
@@ -817,22 +910,25 @@
         }
 
         function correlation(template, x, y) {
-            const candidate = patch(after, x, y);
-            if (candidate.energy < 16) return -1;
-            let dot = 0;
-            for (let i = 0; i < template.values.length; i++) {
-                dot += (template.values[i] - template.mean) * (candidate.values[i] - candidate.mean);
+            let sum = 0, square = 0, dot = 0, i = 0;
+            for (let dy = -radius; dy <= radius; dy += 2) {
+                for (let dx = -radius; dx <= radius; dx += 2) {
+                    const value = after[(y + dy) * width + x + dx];
+                    sum += value;
+                    square += value * value;
+                    dot += (template.values[i++] - template.mean) * value;
+                }
             }
-            return dot / (template.energy * candidate.energy);
+            const energy = Math.sqrt(Math.max(0, square - sum * sum / i));
+            return energy < 16 ? -1 : dot / (template.energy * energy);
         }
 
         const cells = new Map();
         for (let y = margin; y < height - margin; y += 2) {
             for (let x = margin; x < width - margin; x += 2) {
                 const u = x / width, v = y / height;
-                const background = u < .16 || u > .84 || v < .20 || v > .91;
-                const product = u > .27 && u < .73 && v > .29 && v < .78;
-                if (!background && !product) continue;
+                const background = u < .16 || u > .84 || v < .22 || v > .88;
+                if (!background) continue;
                 // Ignore straight edges that cannot locate a point in both axes.
                 let xx = 0, yy = 0, xy = 0;
                 for (let dy = -3; dy <= 3; dy += 2) {
@@ -845,36 +941,30 @@
                 }
                 const score = (xx * yy - xy * xy) / Math.max(1, xx + yy);
                 if (score < 220) continue;
-                const region = background ? 'background' : 'product';
-                const key = region + ':' + Math.floor(u * 9) + ':' + Math.floor(v * 12);
-                if (!cells.has(key) || cells.get(key).score < score) cells.set(key, {x, y, score, region});
+                const key = Math.floor(u * 9) + ':' + Math.floor(v * 12);
+                if (!cells.has(key) || cells.get(key).score < score) cells.set(key, {x, y, score});
             }
         }
 
-        for (const {x, y, region} of cells.values()) {
+        for (const {x, y} of cells.values()) {
             const template = patch(before, x, y);
             if (template.energy < 23) continue;
             let best = {x, y, score: correlation(template, x, y)};
             const peaks = [best];
-            for (let dy = -search; dy <= search; dy += 2) {
-                for (let dx = -search; dx <= search; dx += 2) {
-                    const next = {x: x + dx, y: y + dy, score: correlation(template, x + dx, y + dy)};
+            for (let candidateY = Math.max(margin, y - searchY); candidateY <= Math.min(height - margin - 1, y + searchY); candidateY++) {
+                for (let candidateX = Math.max(margin, x - searchX); candidateX <= Math.min(width - margin - 1, x + searchX); candidateX++) {
+                    const score = correlation(template, candidateX, candidateY);
+                    if (score < .815) continue;
+                    const next = {x: candidateX, y: candidateY, score};
                     peaks.push(next);
-                    if (next.score > best.score) best = next;
-                }
-            }
-            const coarse = best;
-            for (let dy = -1; dy <= 1; dy++) {
-                for (let dx = -1; dx <= 1; dx++) {
-                    const next = {x: coarse.x + dx, y: coarse.y + dy, score: correlation(template, coarse.x + dx, coarse.y + dy)};
                     if (next.score > best.score) best = next;
                 }
             }
             if (best.score < .86 || peaks.some(other =>
                 Math.hypot(other.x - best.x, other.y - best.y) > 3 && other.score > best.score - .045)) continue;
-            groups[region].push({x, y, nextX: best.x, nextY: best.y});
+            matches.push({x, y, nextX: best.x, nextY: best.y});
         }
-        return groups;
+        return matches;
     }
 
     function fitRegion(matches, width, height) {
@@ -913,58 +1003,102 @@
         return { ...transform, residual: Math.sqrt(best.reduce((sum, p) => sum + error(transform, p) ** 2, 0) / best.length) };
     }
 
-    function comparePhotoPixels(before, after, width, height) {
-        const regions = matchRegions(before, after, width, height);
-        const background = fitRegion(regions.background, width, height);
-        const product = fitRegion(regions.product, width, height);
-        if (!background || !product) return 'uncertain';
-        const backgroundScale = Math.hypot(background.a, background.b);
-        const productScale = Math.hypot(product.a, product.b);
-        const scaleChange = productScale / backgroundScale - 1;
-        const rotationChange = Math.atan2(product.b, product.a) - Math.atan2(background.b, background.a);
-        const dx = (product.a - background.a) * width / 2 - (product.b - background.b) * height / 2 + product.tx - background.tx;
-        const dy = (product.b - background.b) * width / 2 + (product.a - background.a) * height / 2 + product.ty - background.ty;
-        const shift = Math.hypot(dx, dy);
-        if (Math.abs(backgroundScale - 1) > .055 || Math.abs(background.b) > .05 ||
-            background.residual > .9 || product.residual > .9) return 'uncertain';
-        if (Math.abs(scaleChange) <= .012 && Math.abs(rotationChange) <= .014 && shift <= 1.3) return 'similar';
-        if (Math.abs(scaleChange) >= .027 && Math.abs(scaleChange) <= .10 &&
-            Math.abs(rotationChange) <= .018 && shift <= 3.6) return 'suspect';
-        return 'uncertain';
+    // The close-up guide places the door join at x=50% and both lower edges near y=50%.
+    function findDoorEdge(pixels, width, height, from, to) {
+        const middle = width / 2;
+        const left = Math.round(width * from), right = Math.round(width * to);
+        const segments = 5;
+        const startY = Math.round(height * .39), endY = Math.round(height * .61);
+        const edgeOffset = Math.max(2, Math.round(height * .0025));
+        const sampleStep = Math.max(1, Math.floor((right - left) / 40));
+        const candidates = [];
+        for (let y = startY; y <= endY; y++) {
+            for (let angle = -10; angle <= 10; angle++) {
+                const slope = angle * .0125;
+                const sums = new Float32Array(segments);
+                const counts = new Uint16Array(segments);
+                for (let x = left; x < right; x += sampleStep) {
+                    const row = Math.round(y + (x - middle) * slope);
+                    if (row < edgeOffset || row + edgeOffset >= height) continue;
+                    const segment = Math.floor((x - left) * segments / (right - left));
+                    sums[segment] += pixels[(row + edgeOffset) * width + x] - pixels[(row - edgeOffset) * width + x];
+                    counts[segment]++;
+                }
+                const strengths = Array.from(sums, (sum, i) => sum / Math.max(1, counts[i]));
+                const average = strengths.reduce((a, b) => a + b, 0) / segments;
+                const aligned = strengths.filter(value => value * Math.sign(average) >= 9).length;
+                if (aligned >= 4 && Math.abs(average) >= 16) {
+                    candidates.push({y, slope, score: Math.abs(average), sign: Math.sign(average)});
+                }
+            }
+        }
+        candidates.sort((a, b) => b.score - a.score || Math.abs(a.slope) - Math.abs(b.slope));
+        const best = candidates[0];
+        const separation = Math.max(edgeOffset * 2 + 1, Math.round(height * .009));
+        if (!best || candidates.some(other =>
+            Math.abs(other.y - best.y + (other.slope - best.slope) * ((left + right) / 2 - middle)) > separation &&
+            other.score > best.score * .80)) return null;
+        return best;
     }
 
-    function comparePhotos(before, after) {
-        const ratio = before.naturalWidth / before.naturalHeight;
-        if (Math.abs(ratio / (after.naturalWidth / after.naturalHeight) - 1) > .025) return 'uncertain';
-        const width = Math.round(256 * Math.min(1, ratio));
-        const height = Math.round(256 * Math.min(1, 1 / ratio));
-        if (Math.min(width, height) < 104) return 'uncertain';
-        return comparePhotoPixels(photoPixels(before, width, height), photoPixels(after, width, height), width, height);
+    function hasDoorJoin(pixels, width, height, edgeY) {
+        const offset = Math.max(2, Math.round(width * .007));
+        const firstRow = Math.round(edgeY - height * .19);
+        const rowStep = Math.max(2, Math.round(height * .014));
+        const lastRow = Math.round(edgeY - height * .045);
+        for (let x = Math.round(width * .45); x <= Math.round(width * .55); x += 2) {
+            let contrasts = 0;
+            let samples = 0;
+            for (let y = firstRow; y <= lastRow; y += rowStep) {
+                const i = y * width + x;
+                const left = pixels[i - offset], center = pixels[i], right = pixels[i + offset];
+                if (Math.max(left, center, right) - Math.min(left, center, right) >= 14) contrasts++;
+                samples++;
+            }
+            if (contrasts >= samples * .65) return true;
+        }
+        return false;
+    }
+
+    function judgeDoorEdges(pixels, width, height) {
+        if (width < 240 || height < 320) return 'retake';
+        const left = findDoorEdge(pixels, width, height, .22, .46);
+        const right = findDoorEdge(pixels, width, height, .54, .78);
+        if (!left || !right || left.sign !== right.sign || Math.abs(left.slope - right.slope) > .0375) return 'retake';
+        if (!hasDoorJoin(pixels, width, height, Math.min(left.y, right.y))) return 'retake';
+        // Intercepts at the door join cancel a shared camera roll.
+        const difference = left.y - right.y;
+        const magnitude = Math.abs(difference);
+        if (magnitude > height * .055) return 'retake';
+        if (magnitude <= Math.max(2, height * .002)) return 'pass';
+        if (magnitude < Math.max(4, height * .004)) return 'retake';
+        return difference > 0 ? 'left' : 'right';
+    }
+
+    function showDoorResult(result) {
+        const passed = result === 'pass';
+        document.getElementById('resultTitle').textContent = passed ? 'PASS · 도어 하단 높이 정렬' : '재촬영 필요';
+        document.getElementById('resultDetail').textContent = passed
+            ? '좌우 도어 하단의 높이 차이가 테스트용 판정 범위 안입니다.'
+            : '좌우 도어 하단을 같은 화면에 넣고, 도어 사이를 중앙 세로선에 맞춰 다시 찍어주세요.';
+        document.getElementById('resultPhotoReview').open = false;
+        showScreen('pass-screen');
+        if (result !== 'left' && result !== 'right') return;
+
+        openManualDirect('door_gap_' + result, true);
+        const side = result === 'left' ? '왼쪽' : '오른쪽';
+        const notice = document.getElementById('failReasonText');
+        notice.textContent = side + ' 도어 하단이 5mm 낮습니다.';
+        notice.style.display = 'block';
+        document.getElementById('guideHeaderSub').textContent = '도어 하단 판정 · 조정 가이드';
+        document.getElementById('resultTitle').textContent = side + ' 도어 하단 낮음';
+        document.getElementById('resultDetail').textContent = '조정 가이드대로 확인한 뒤 도어 하단을 다시 촬영해 주세요.';
     }
 
     function registerBefore(photo) {
         beforePhoto = photo;
         document.getElementById('ghostImg').src = photo.src;
         showScreen('notice-screen');
-    }
-
-    function showComparison(result, photo) {
-        const messages = {
-            similar: ['기준 사진과 유사', '배경과 냉장고의 상대 위치에서 뚜렷한 차이가 감지되지 않았습니다.'],
-            suspect: ['전후 위치 변화 의심', '주변 배경과 비교했을 때 냉장고가 사진에 보이는 크기가 달라졌습니다. 실제 돌출 상태를 확인해 주세요.'],
-            uncertain: ['사진만으로 확인 어려움', '배경이나 냉장고의 특징을 충분히 찾지 못했거나 구도 차이가 큽니다. 전후 사진을 겹쳐 보거나 같은 위치에서 다시 찍어주세요.']
-        };
-        const [title, detail] = messages[result];
-        document.getElementById('resultTitle').textContent = title;
-        document.getElementById('resultDetail').textContent = detail;
-        const slider = document.getElementById('resultBlend');
-        document.getElementById('resultBeforePhoto').src = beforePhoto.src;
-        const after = document.getElementById('resultAfterPhoto');
-        after.src = photo.src;
-        after.style.opacity = .5;
-        slider.value = 50;
-        document.getElementById('resultPhotoReview').open = result === 'uncertain';
-        showScreen('pass-screen');
     }
 
     let levelSignalTimer;
@@ -1022,6 +1156,7 @@
     function cancelExit() {
         if (screenBeforeExit === 'camera1-screen') startCamera(1);
         else if (screenBeforeExit === 'camera2-screen') startCamera(2);
+        else if (screenBeforeExit === 'door-camera-screen') startCamera(3);
         else showScreen(screenBeforeExit);
     }
 
