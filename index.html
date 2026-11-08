@@ -207,7 +207,7 @@
             </div>
             <div class="btn-group">
                 <button class="main-action-btn" onclick="startCamera(1)">수리 전 사진 촬영</button>
-                <button class="sub-action-btn" onclick="openLevel()">휴대폰 수평계</button>
+                <button class="sub-action-btn" onclick="openLevel()">별도 도구 · 휴대폰 수평계</button>
                 <button class="sub-action-btn" onclick="openManualDirect()">📖 수평/단차 조치 매뉴얼 바로보기</button>
             </div>
         </div>
@@ -330,8 +330,8 @@
         </div>
         <div class="ready-content">
             <div class="ready-card">
-                <div class="ready-title">좌우 도어 하단을 정면에서 가까이 찍어주세요.</div>
-                <p class="ready-desc">비교할 두 도어가 만나는 틈을 가운데 세로선에, 두 도어의 하단을 가운데 가로선에 맞춰주세요. 발이나 바닥 선 대신 도어 끝이 선명하게 보여야 합니다.</p>
+                <div class="ready-title">휴대폰을 세워 좌우 도어 하단을 정면에서 찍어주세요.</div>
+                <p class="ready-desc">비교할 두 도어가 만나는 틈을 가운데 세로선에, 두 도어의 하단을 가운데 가로선에 맞춰주세요. 바닥 줄눈보다 도어 끝이 선명하게 보이도록 가까이 찍어주세요.</p>
             </div>
             <button class="main-action-btn" onclick="startCamera(3)">도어 하단 촬영</button>
         </div>
@@ -345,7 +345,7 @@
                 <button type="button" onclick="returnHome()">처음으로</button>
             </div>
             <div class="camera-overlay">
-                <div class="level-bar">도어 하단은 가로선 · 도어 사이는 세로선</div>
+                <div class="level-bar">세로 촬영 · 하단은 가로선, 도어 사이는 세로선</div>
                 <div class="grid-line-h mid"></div>
                 <div class="grid-line-v center"></div>
             </div>
@@ -364,7 +364,7 @@
         </div>
         <div class="ready-content">
             <div class="ready-card">
-                <p class="ready-desc">측정할 평평한 면에 휴대폰 화면을 위로 향하게 놓고, 휴대폰 상단을 냉장고 뒤쪽으로 향하게 하세요.</p>
+                <p class="ready-desc">이 수평계는 도어 촬영과 별도로 사용하는 기능입니다. 측정할 면에 휴대폰 화면을 위로 향하게 놓고, 휴대폰 상단을 냉장고 뒤쪽으로 향하게 하세요.</p>
                 <div class="level-readings">
                     <div>좌우 기울기<strong id="levelLeftRight">—</strong></div>
                     <div>앞뒤 기울기<strong id="levelFrontBack">—</strong></div>
@@ -1008,7 +1008,7 @@
         const middle = width / 2;
         const left = Math.round(width * from), right = Math.round(width * to);
         const segments = 5;
-        const startY = Math.round(height * .39), endY = Math.round(height * .61);
+        const startY = Math.round(height * .45), endY = Math.round(height * .55);
         const edgeOffset = Math.max(2, Math.round(height * .0025));
         const sampleStep = Math.max(1, Math.floor((right - left) / 40));
         const candidates = [];
@@ -1061,26 +1061,35 @@
     }
 
     function judgeDoorEdges(pixels, width, height) {
-        if (width < 240 || height < 320) return 'retake';
-        const left = findDoorEdge(pixels, width, height, .22, .46);
-        const right = findDoorEdge(pixels, width, height, .54, .78);
-        if (!left || !right || left.sign !== right.sign || Math.abs(left.slope - right.slope) > .0375) return 'retake';
-        if (!hasDoorJoin(pixels, width, height, Math.min(left.y, right.y))) return 'retake';
-        // Intercepts at the door join cancel a shared camera roll.
+        if (width < 240 || height < 320) return 'retake-size';
+        const left = findDoorEdge(pixels, width, height, .30, .46);
+        const right = findDoorEdge(pixels, width, height, .54, .70);
+        if (!left || !right || left.sign !== right.sign) return 'retake-edge';
+        if (!hasDoorJoin(pixels, width, height, Math.min(left.y, right.y))) return 'retake-join';
+        if (Math.abs(left.slope - right.slope) > .175) return 'retake-angle';
+        // Compare each edge at the center guide rather than requiring equal slopes.
+        // Perspective can make even aligned doors slope in opposite directions.
         const difference = left.y - right.y;
         const magnitude = Math.abs(difference);
-        if (magnitude > height * .055) return 'retake';
+        if (magnitude > height * .055) return 'retake-edge';
         if (magnitude <= Math.max(2, height * .002)) return 'pass';
-        if (magnitude < Math.max(4, height * .004)) return 'retake';
+        if (magnitude < Math.max(4, height * .004)) return 'retake-borderline';
         return difference > 0 ? 'left' : 'right';
     }
 
     function showDoorResult(result) {
         const passed = result === 'pass';
         document.getElementById('resultTitle').textContent = passed ? 'PASS · 도어 하단 높이 정렬' : '재촬영 필요';
-        document.getElementById('resultDetail').textContent = passed
-            ? '좌우 도어 하단의 높이 차이가 테스트용 판정 범위 안입니다.'
-            : '좌우 도어 하단을 같은 화면에 넣고, 도어 사이를 중앙 세로선에 맞춰 다시 찍어주세요.';
+        const resultMessages = {
+            pass: '좌우 도어 하단의 높이 차이가 테스트용 판정 범위 안입니다.',
+            'retake-size': '사진 해상도가 낮습니다. 휴대폰을 세우고 다시 촬영해 주세요.',
+            'retake-edge': '양쪽 도어 끝을 바닥 줄눈과 구분하기 어렵습니다. 도어 끝을 가운데 가로선에 맞추고 가까이 찍어주세요.',
+            'retake-join': '두 도어 사이 틈이 선명하게 보이지 않습니다. 틈을 가운데 세로선에 맞춰 다시 찍어주세요.',
+            'retake-angle': '좌우 도어가 서로 다른 각도로 보입니다. 카메라를 도어 정면에 두고 다시 찍어주세요.',
+            'retake-borderline': '높이 차이가 판정 경계에 있습니다. 카메라를 흔들리지 않게 잡고 가까이 다시 찍어주세요.'
+        };
+        document.getElementById('resultDetail').textContent = resultMessages[result]
+            || '좌우 도어 하단을 같은 화면에 넣고, 도어 사이를 중앙 세로선에 맞춰 다시 찍어주세요.';
         document.getElementById('resultPhotoReview').open = false;
         showScreen('pass-screen');
         if (result !== 'left' && result !== 'right') return;
