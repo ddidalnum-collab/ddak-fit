@@ -273,6 +273,52 @@
         .camera-guides.seam .lower { display: none; }
         .camera-guides.top .vertical { display: none; }
         @media (max-width:370px) { .analysis-marked-photo { height: 165px; } }
+
+/* Unified capture tools from APK 1.1.2 + automated alignment results from HTML */
+[hidden] { display:none !important; }
+body, .phone-frame {height:100vh;height:100dvh;}
+.camera-zoom {position:absolute;z-index:17;bottom:91px;left:12px;right:12px;background:rgba(3,18,35,.85);border:1px solid #a8c8eb70;color:white;border-radius:11px;display:flex;align-items:center;gap:9px;padding:8px 11px;font-size:12px;font-weight:800;}
+.camera-zoom input {flex:1; min-width:0;accent-color:#49b1ff;}
+.camera-zoom output {min-width:82px;text-align:right;}
+.camera-step-card {top:118px;z-index:12;pointer-events:none;padding:10px 12px;}
+.camera-step-card button {pointer-events:auto;}
+.camera-figure-toggle {border:1px solid #cbe6ff;background:#f2f8ff;color:#075a9f;border-radius:7px;padding:5px 9px;font-size:12px;font-weight:800;margin-top:7px;}
+.camera-figure-panel {margin-top:7px;background:rgba(240,248,255,.97);border-radius:8px;padding:6px;color:#203b59;}
+.camera-figure-panel svg {display:block;height:88px;width:100%;}
+.camera-figure-panel p {font-size:11px;line-height:1.35;color:#34526b;}
+.camera-step-desc {font-size:11px;}
+.camera-previous {bottom:148px;}
+.slider-box {bottom:148px;left:auto;right:12px;width:min(58%,225px);}
+.auto-shot-toggle {top:65px;right:12px;}
+.focus-ring-ddak {position:absolute;z-index:16;width:58px;height:58px;border:2px solid #ffdf54;border-radius:10px;pointer-events:none;transform:translate(-50%,-50%);animation:focus-ping .75s ease-out forwards;}
+@keyframes focus-ping {0%{opacity:1;scale:1.25}100%{opacity:0;scale:1}}
+.camera-extra-hint {position:absolute;z-index:12;bottom:195px;left:12px;color:white;font-size:11px;background:#132a43bd;border-radius:8px;padding:5px 8px;pointer-events:none;}
+#camera1-screen .camera-step-card .camera-step-title,#camera2-screen .camera-step-card .camera-step-title {font-size:14px;}
+/* Standalone live step comparison: approximate px->mm; intentionally no PASS/FAIL */
+.live-head {padding:13px 16px;background:#fff;border-bottom:1px solid #e1e9f2;display:grid;gap:7px;}
+.live-head h2 {font-size:18px;color:#195ca9;}
+.live-head p {font-size:12px;color:#546779;line-height:1.5;}
+.live-panel {flex:1;position:relative;min-height:200px;background:#070e15;overflow:hidden;}
+.live-panel video {display:block;width:100%;height:100%;object-fit:cover;}
+.live-overlay {position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.live-overlay .line-base {stroke:#ffdd5e;stroke-width:1.3;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;}
+.live-overlay .line-detected {stroke:#37d7d1;stroke-width:2.5;vector-effect:non-scaling-stroke;}
+.live-readout {position:absolute;left:9px;right:9px;bottom:10px;background:#061c2cde;color:white;border-radius:11px;padding:10px;text-align:center;pointer-events:none;}
+.live-values {display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.live-values b {display:block;font-size:22px;margin:4px 0;}
+.live-values small {display:block;font-size:11px;color:#d2e9fd;}
+.live-readout p {font-size:11px;line-height:1.5;margin-top:6px;}
+.live-tools {padding:12px 15px;display:grid;gap:10px;background:#fff;}
+.live-tabs {display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.live-tabs button {padding:10px;background:#f5f8fc;border:1px solid #cddaea;border-radius:9px;font-size:13px;font-weight:800;}
+.live-tabs button[aria-pressed=true] {background:#e1f1ff;border-color:#1680d5;color:#0664a9;}
+.live-records {font-size:12px;color:#364d66;line-height:1.6;background:#f4f8fc;border-radius:10px;padding:10px;}
+.live-records img {max-width:49%;height:96px;object-fit:cover;border-radius:6px;}
+.live-tools .main-action-btn {padding:11px;font-size:13px;}
+.live-note {font-size:12px;color:#7c5360;background:#fff4f4;border-radius:8px;padding:9px;line-height:1.5;}
+@media(max-height:740px) { .camera-step-card {top:105px;} .camera-figure-panel svg {height:60px;} .camera-previous {bottom:145px;} }
+@media(max-height:620px) { .camera-step-desc {display:none;} .camera-step-card {top:94px;} .camera-figure-panel svg{height:50px;} }
+
     </style>
 </head>
 <body>
@@ -285,7 +331,7 @@
             <img src="fridge_fit_main.png" alt="비스포크 인피니트 라인" onerror="this.onerror=null; this.src='icon.png';">
         </div>
         <div class="splash-title">DDak-Fit<span>(딱-핏)</span></div>
-        <div class="splash-sub">냉장고 수리 전후 복귀 비교 · 도어 정렬 점검</div>
+        <div class="splash-sub">도어 정렬 자동 분석 · 촬영 가이드 통합 버전</div>
         <div class="splash-footer">Made by 디지털남울산센터</div>
     </div>
 
@@ -321,6 +367,7 @@
             </div>
             <div class="btn-group">
                 <button id="beginBeforeBtn" class="main-action-btn" onclick="beginBeforeCapture()" disabled>수리 전 근접 촬영 시작</button>
+                <button class="sub-action-btn" onclick="FitLive.open()">🎯 실시간 단차 참고 측정 (도어 폭 기준)</button>
                 <button class="sub-action-btn" onclick="openLevel()">별도 도구 · 휴대폰 수평계</button>
                 <button class="sub-action-btn" onclick="openManualDirect()">📖 수평/단차 조치 매뉴얼 바로보기</button>
             </div>
@@ -336,16 +383,21 @@
                 <button type="button" onclick="returnHome()">처음으로</button>
             </div>
             <div class="camera-guides top" id="beforeAnalysisGuides" aria-hidden="true"><span class="line upper"></span><span class="line lower"></span><span class="line vertical"></span></div>
+            <label class="camera-back auto-shot-toggle"><input id="beforeAutoShot" type="checkbox" checked> 자동 촬영</label>
             <div class="camera-overlay">
-                <div class="level-bar"><span>도어·가구장 경계가 보이도록 촬영하세요</span></div>
+                <div class="level-bar auto-hint"><span id="beforeCameraHint" role="status">도어 경계 인식 중 · 수동 촬영 가능</span></div>
                 <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
             </div>
             <div class="camera-step-card">
                 <div id="beforeStepCount" class="camera-step-count"></div>
                 <div id="beforeStepTitle" class="camera-step-title"></div>
                 <div id="beforeStepDesc" class="camera-step-desc"></div>
+                <button id="beforeFigureToggle" class="camera-figure-toggle" type="button" onclick="toggleShotFigure('before')" aria-expanded="false">촬영 위치 그림 보기 ▼</button>
+                <div id="beforeFigurePanel" class="camera-figure-panel" hidden></div>
             </div>
             <button id="beforePrevious" class="camera-previous" type="button" onclick="previousShot(1)">← 이전 부위</button>
+            <div class="camera-zoom" id="beforeZoomControl"><label for="beforeZoomRange">확대</label><input id="beforeZoomRange" type="range" min="1" max="3" step="0.1" value="1" oninput="setCaptureZoom('before', this.value)"><output id="beforeZoomValue">1.0×</output></div>
+            <span class="camera-extra-hint">화면을 눌러 초점 · 확대 후 동일 배율 유지</span>
             <div class="shutter-bar"><button class="shutter-btn" onclick="takeBeforePhoto()" aria-label="수리 전 현재 부위 촬영"><div class="shutter-inner"></div></button></div>
         </div>
     </div>
@@ -418,11 +470,15 @@
                 <div id="afterStepCount" class="camera-step-count"></div>
                 <div id="afterStepTitle" class="camera-step-title"></div>
                 <div id="afterStepDesc" class="camera-step-desc"></div>
+                <button id="afterFigureToggle" class="camera-figure-toggle" type="button" onclick="toggleShotFigure('after')" aria-expanded="false">촬영 위치 그림 보기 ▼</button>
+                <div id="afterFigurePanel" class="camera-figure-panel" hidden></div>
             </div>
             <button id="afterPrevious" class="camera-previous" type="button" onclick="previousShot(2)">← 이전 부위</button>
-            <div class="slider-box">
+            <div class="slider-box" style="bottom:201px">
                 <span>고스트</span><input type="range" id="ghostOpacity" min="10" max="90" value="42" oninput="changeGhostOpacity(this.value)" aria-label="고스트 사진 투명도">
             </div>
+            <div class="camera-zoom" id="afterZoomControl"><label for="afterZoomRange">확대</label><input id="afterZoomRange" type="range" min="1" max="3" step="0.1" value="1" oninput="setCaptureZoom('after', this.value)"><output id="afterZoomValue">1.0×</output></div>
+            <span class="camera-extra-hint">화면을 눌러 초점 · 확대 후 동일 배율 유지</span>
             <div class="shutter-bar"><button class="shutter-btn" onclick="takeAfterPhoto()" aria-label="수리 후 현재 부위 촬영"><div class="shutter-inner"></div></button></div>
         </div>
     </div>
@@ -521,6 +577,7 @@
                 <label class="fridge-count-title" for="guideShotPick">재촬영할 부위 선택</label>
                 <select id="guideShotPick" class="review-selector" onchange="setGuideRetakeShot(this.value)"></select>
             </div>
+            <button type="button" class="sub-action-btn" onclick="FitLive.open()">참고: 실시간 단차 보기</button>
             <button id="guideRetryBtn" class="main-action-btn guide-retake-btn" hidden onclick="retryAfterGuide()">조정 완료 · 이 부위만 다시 촬영하기</button>
         </div>
     </div>
@@ -600,9 +657,42 @@
         </section>
         <div class="btn-group">
             <button class="main-action-btn" onclick="revisitAfterCapture()">선택한 부위 수리 후 다시 촬영</button>
+            <button class="sub-action-btn" onclick="FitLive.open()">실시간 단차 참고 측정</button>
             <button class="sub-action-btn" onclick="openManualDirect()">수평·단차 조정 매뉴얼 보기</button>
             <button class="sub-action-btn" onclick="returnHome()">처음으로</button>
             <button class="sub-action-btn" onclick="openExitScreen()">작업 종료</button>
+        </div>
+    </div>
+
+
+    <!-- APK 1.1.2 live measurement retained as optional visual reference only; not used for automated issue decisions -->
+    <div id="live-adjust-screen" class="screen">
+        <div class="app-header">
+            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub">실시간 단차 · 참고 측정</div></div>
+            <div class="header-actions"><button class="header-btn" onclick="FitLive.close()">돌아가기</button><button class="header-btn" onclick="returnHome()">처음으로</button></div>
+        </div>
+        <div class="live-head">
+            <h2>도어 옆 높이 차이 실시간 확인</h2>
+            <p>기준 도어 한 짝의 양쪽 틈이 보이도록 비춰주세요. 도어 폭으로 환산한 참고값이며 자동 진단·합격 판정에는 사용하지 않습니다.</p>
+        </div>
+        <div id="livePanel" class="live-panel">
+            <video id="liveVideo" playsinline autoplay muted></video>
+            <svg class="live-overlay" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="line-base" d="M16 0 V100 M84 0 V100 M0 50 H100"/><g id="liveDetected"></g>
+            </svg>
+            <div class="live-readout"><div class="live-values">
+                <div><small>왼쪽 인접 도어</small><b id="liveLeft">—</b><small id="liveLeftStatus">인식 대기</small></div>
+                <div><small>오른쪽 인접 도어</small><b id="liveRight">—</b><small id="liveRightStatus">인식 대기</small></div>
+            </div><p id="liveHint">카메라를 준비하고 있습니다.</p></div>
+        </div>
+        <div class="live-tools">
+            <div class="live-tabs"><button id="liveTop" aria-pressed="true" onclick="FitLive.setEdge('top')">도어 상단</button><button id="liveBottom" aria-pressed="false" onclick="FitLive.setEdge('bottom')">도어 하단</button></div>
+            <label style="font-size:12px;font-weight:800" for="liveDoorWidth">도어 한 짝의 실제 폭 (mm) · 모델별 확인값
+                <input type="number" id="liveDoorWidth" min="300" max="1200" step="1" placeholder="실제 도어 폭 입력" style="display:block;width:100%;padding:8px;border:1px solid #bfd0e0;border-radius:8px;margin-top:5px" oninput="FitLive.setWidth(this.value)">
+            </label>
+            <div class="live-tabs"><button onclick="FitLive.record('before')">수리 전 참고값 기록</button><button onclick="FitLive.record('after')">수리 후 참고값 기록</button></div>
+            <div id="liveRecords" class="live-records">참고 측정값을 기록하면 이곳에서 전후를 비교할 수 있습니다.</div>
+            <p class="live-note">주의: 추정된 모서리와 입력한 도어 폭으로 환산한 값입니다. 촬영 각도·원근·도어 폭 입력에 따라 오차가 발생하며, mm 판정이나 수평 정상 확정 근거가 아닙니다. 기준 도어 양쪽 틈이 보이지 않으면 측정 보류합니다.</p>
         </div>
     </div>
 
@@ -823,6 +913,7 @@
         const exitScreen = document.getElementById('exit-screen');
         const guideScreen = document.getElementById('guide-screen');
 
+        if (document.getElementById('live-adjust-screen').classList.contains('active')) { FitLive.close(); return; }
         if (document.getElementById('level-screen').classList.contains('active')) {
             closeLevel();
             return;
@@ -849,6 +940,8 @@
         shotIndex = 0;
         beforePhotos.clear();
         afterPhotos.clear();
+        shotZooms.clear();
+        FitLive.stop();
         currentReviewKey = null;
         currentAlignmentKey = null;
         alignmentItems = buildAlignmentItems(count, referenceDoor);
@@ -895,6 +988,7 @@
         if (!shotPlan.length) return;
         beforePhotos.clear();
         afterPhotos.clear();
+        shotZooms.clear();
         revisitingShot = false;
         shotIndex = 0;
         startCamera(1);
@@ -993,6 +1087,7 @@
         const video = document.getElementById(videoId);
         const shutter = document.querySelector('#' + screenId + ' .shutter-btn');
         if (!updateCameraShotUI(step)) return;
+        showFigure(step===1?'before':'after');
         shutter.disabled = true;
         if (step === 2) {
             document.getElementById('afterCameraHint').textContent = '기준선 찾는 중';
@@ -1013,12 +1108,147 @@
             await video.play();
             if (request !== cameraRequest) return;
             shutter.disabled = false;
-            if (step === 2) watchAutoShot(video, request, shotForCurrentIndex().key);
+            await prepareCameraExtras(video,step===1?'before':'after',request);
+            if (request !== cameraRequest) return;
+            if (step === 1) watchBeforeAutoShot(video,request,shotForCurrentIndex().key);
+            else watchAutoShot(video, request, shotForCurrentIndex().key);
         } catch (error) {
             if (request !== cameraRequest) return;
             alert('카메라를 열 수 없습니다. 브라우저 카메라 권한과 HTTPS 접속을 확인해 주세요.');
             leaveCamera(step);
         }
+    }
+
+
+    // --- Combined camera usability enhancements (APK-inspired), keeping capture geometry consistent ---
+    const shotZooms = new Map();
+    let zoomTrack = null;
+    let zoomRequestId = 0;
+    let figureVisible = {before:false,after:false};
+    let beforeAutoRequest = 0;
+    function guideSVG(shot) {
+        const gap=shot.group==='기준 간격';
+        const title=gap ? '가구장 하단과 기준 도어 윗선 모두 포함' : shot.group==='이음부 상단' ? '좌우 도어 윗선과 가운데 이음부' : '좌우 도어 아랫선과 가운데 이음부';
+        const h=gap ? '<path d="M18 30 H282" stroke="#1682db" stroke-width="4"/><path d="M18 61 H282" stroke="#e7af29" stroke-width="4"/>' :
+          '<path d="M25 52 H142 M158 52 H275" stroke="#138adf" stroke-width="4"/><path d="M150 8 V88" stroke="#21a67b" stroke-width="3" stroke-dasharray="7 5"/>';
+        const blocks=gap ? '<rect x="20" y="5" width="260" height="25" fill="#c6d2dd"/><rect x="20" y="63" width="260" height="26" fill="#e8f0f6"/>' :
+            `<rect x="26" y="${shot.group==='이음부 상단'?54:5}" width="115" height="${shot.group==='이음부 상단'?32:47}" fill="#d7e7f5"/><rect x="159" y="${shot.group==='이음부 상단'?54:5}" width="115" height="${shot.group==='이음부 상단'?32:47}" fill="#d7e7f5"/>`;
+        return '<svg viewBox="0 0 300 95" role="img" aria-label="'+title+'"><rect width="300" height="95" rx="7" fill="#edf6ff"/>'+blocks+h+'</svg><p>'+title+' · 도어의 실제 경계가 선명해야 합니다.</p>';
+    }
+    function toggleShotFigure(phase) {
+        figureVisible[phase]=!figureVisible[phase];
+        showFigure(phase);
+    }
+    function showFigure(phase) {
+        const panel=document.getElementById(phase+'FigurePanel'), btn=document.getElementById(phase+'FigureToggle');
+        if (!panel || !btn) return;
+        panel.hidden=!figureVisible[phase];
+        btn.setAttribute('aria-expanded', String(figureVisible[phase]));
+        btn.textContent=figureVisible[phase] ? '촬영 위치 그림 접기 ▲' : '촬영 위치 그림 보기 ▼';
+        if (figureVisible[phase] && shotForCurrentIndex()) panel.innerHTML=guideSVG(shotForCurrentIndex());
+    }
+    function videoCropRect(video) {
+        const origW=video.videoWidth,origH=video.videoHeight;
+        const ratio=(video.clientWidth && video.clientHeight) ? video.clientWidth/video.clientHeight : origW/origH;
+        let w=Math.min(origW,origH*ratio),h=Math.min(origH,w/ratio);
+        const digital=Number(video.dataset.digitalZoom||1);
+        w/=digital; h/=digital;
+        return [(origW-w)/2,(origH-h)/2,w,h];
+    }
+    async function prepareCameraExtras(video,phase,request) {
+        const track=activeCameraStream?.getVideoTracks()?.[0];
+        if (!track || request!==cameraRequest) return;
+        zoomTrack=track;
+        const capabilities=track.getCapabilities?track.getCapabilities():{};
+        if(capabilities.focusMode?.includes('continuous')) {
+            try {await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+        }
+        const isAfter=phase==='after';
+        const refZoom=isAfter ? (shotZooms.get(shotForCurrentIndex().key)||1) : null;
+        const slider=document.getElementById(phase+'ZoomRange');
+        const max=capabilities.zoom ? Math.min(6,capabilities.zoom.max||3) : 3;
+        const min=capabilities.zoom ? Math.max(1,capabilities.zoom.min||1) : 1;
+        slider.min=min;slider.max=Math.max(min,max);
+        slider.step=capabilities.zoom?.step||0.1;
+        slider.disabled=!!refZoom;
+        const value=Math.max(min,Math.min(Number(refZoom||1),Number(slider.max)));
+        slider.value=value;
+        await applyZoomToVideo(video,phase,value,request);
+        document.getElementById(phase+'ZoomValue').textContent=value.toFixed(1)+'×'+(refZoom?' · 전과 동일':'');
+    }
+    async function applyZoomToVideo(video,phase,value,request) {
+        const track=activeCameraStream?.getVideoTracks()?.[0];
+        if(!track || request!==cameraRequest) return;
+        let hard=false;
+        const capabilities=track.getCapabilities?.()||{};
+        if(capabilities.zoom && value>=capabilities.zoom.min && value<=capabilities.zoom.max) {
+            try {await track.applyConstraints({advanced:[{zoom:value}]}); hard=true;}catch{}
+        }
+        // CSS crop in preview AND source crop in photo/live analysis when hardware zoom is unsupported.
+        video.dataset.digitalZoom=hard?'1':String(value);
+        video.dataset.currentZoom=String(value);
+        video.style.transform=hard?'':`scale(${value})`;
+        video.style.transformOrigin='center center';
+        const label=document.getElementById(phase+'ZoomValue');
+        if(label)label.textContent=value.toFixed(1)+'×'+(phase==='after'?' · 수리 전 배율':'');
+    }
+    function setCaptureZoom(phase,value) {
+        if(phase==='after' && shotZooms.has(shotForCurrentIndex()?.key)) return;
+        const video=document.getElementById(phase==='before'?'videoFeed':'videoFeed2');
+        applyZoomToVideo(video,phase,Number(value),cameraRequest);
+    }
+    async function tapCameraFocus(video,event) {
+        const track=activeCameraStream?.getVideoTracks()?.[0];
+        if(!track || !video.videoWidth) return;
+        const host=video.parentElement;
+        const rect=host.getBoundingClientRect();
+        const x=Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width));
+        const y=Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height));
+        const ring=document.createElement('span');ring.className='focus-ring-ddak';
+        ring.style.left=(event.clientX-rect.left)+'px';ring.style.top=(event.clientY-rect.top)+'px';
+        host.appendChild(ring);setTimeout(()=>ring.remove(),800);
+        const modes=track.getCapabilities?.().focusMode||[];
+        try {
+            const point={pointsOfInterest:[{x,y}]};
+            if(modes.includes('single-shot'))point.focusMode='single-shot';
+            else if(modes.includes('continuous'))point.focusMode='continuous';
+            await track.applyConstraints({advanced:[point]});
+        } catch {} // not all Android devices support tap-to-focus constraint
+    }
+    for(const id of ['videoFeed','videoFeed2']) {
+        const video=document.getElementById(id);
+        video.parentElement.addEventListener('click',event=>{
+            if(event.target.closest('button,input,label,select')) return;
+            tapCameraFocus(video,event);
+        });
+    }
+    // APK-style pre-repair assisted auto-shutter, but only after reliable landmarks + steady frame.
+    function watchBeforeAutoShot(video,request,shotKey) {
+        const shot=shotForCurrentIndex();
+        const toggle=document.getElementById('beforeAutoShot');
+        const hint=document.getElementById('beforeCameraHint');
+        const motionReader=makePixelReader(90,150);
+        let prior=null,stableAt=null;
+        function tick() {
+            if(request!==cameraRequest||shotForCurrentIndex()?.key!==shotKey) return;
+            if (!toggle.checked || document.hidden || video.readyState<2) {
+                hint.textContent=toggle.checked?'카메라 준비 중':'자동 촬영 꺼짐 · 수동 셔터 이용';stableAt=null;prior=null;
+            } else {
+                try {
+                    const frame=samplePhotoGray(video),analysis=frame && frame.contrast>=17 ?
+                        (shot.group==='기준 간격'?evaluateCabinetGap(frame):evaluateSeam(frame,shot)) : null;
+                    const pixels=motionReader(video);
+                    const motion=frameMotion(prior,pixels);prior=pixels;
+                    if(analysis && analysis.state!=='retake' && motion<9) {
+                        stableAt??=performance.now();const elapsed=performance.now()-stableAt;
+                        hint.textContent=elapsed>=1100?'자동 촬영':'경계선 인식 · 잠시 유지해 주세요';
+                        if(elapsed>=1100){takeBeforePhoto(true);return;}
+                    } else { stableAt=null;hint.textContent=analysis?.state==='retake'?'경계선 위치 조정 · 수동 촬영 가능':'흔들리지 않게 찍어주세요'; }
+                } catch {stableAt=null; hint.textContent='인식 어려움 · 수동 촬영 가능';}
+            }
+            setTimeout(tick,260);
+        }
+        tick();
     }
 
     // 수리 전후 완전 픽셀 일치 대신, 기준선 위치·선명도·프레임 안정성을 사용합니다.
@@ -1158,14 +1388,13 @@
         const canvas = document.getElementById('calcCanvas');
         const visibleRatio = video.clientWidth / video.clientHeight;
         if (!Number.isFinite(visibleRatio) || visibleRatio <= 0) return null;
-        const width = Math.min(video.videoWidth, video.videoHeight * visibleRatio);
-        const height = Math.min(video.videoHeight, width / visibleRatio);
+        const crop=videoCropRect(video);
+        const width=crop[2],height=crop[3];
         const scale = Math.min(1, 1920 / Math.max(width, height));
         canvas.width = Math.max(1, Math.round(width * scale));
         canvas.height = Math.max(1, Math.round(height * scale));
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(video, (video.videoWidth - width) / 2, (video.videoHeight - height) / 2,
-            width, height, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(video, ...crop, 0, 0, canvas.width, canvas.height);
         const photo = new Image();
         photo.src = canvas.toDataURL('image/jpeg', .94);
         return photo;
@@ -1177,6 +1406,7 @@
         const video = document.getElementById(cameraScreens[step][1]);
         const photo = captureFrame(video);
         if (!photo) return;
+        if(step===1) shotZooms.set(key,Number(video.dataset.currentZoom||1));
         stopCamera();
         const request = cameraRequest;
         try { await photo.decode(); }
@@ -1188,6 +1418,13 @@
             return;
         }
         if (request !== cameraRequest) return;
+        const shotRecordForQuality=shotPlan.find(s=>s.key===key);
+        const quality=shotRecordForQuality ? analyzeAlignmentPhoto(photo,shotRecordForQuality):null;
+        if (quality?.state==='retake' && !autoCaptured) {
+            const keep=window.confirm('사진에서 필요한 도어 경계선을 찾지 못했습니다.\n\n'+
+                quality.reason+'\n\n[확인] 판정 보류 상태로 사진 저장 / [취소] 재촬영');
+            if (!keep) { startCamera(step); return; }
+        }
         (step === 1 ? beforePhotos : afterPhotos).set(key, photo);
         if (step === 2) {
             // 새 사진을 찍었다면 기존 사진에 대해 내려진 수동 확인 판단은 유지할 수 없습니다.
@@ -1240,7 +1477,8 @@ function samplePhotoGray(photo) {
         const ratio=photo.clientWidth/photo.clientHeight;
         const srcW=photo.videoWidth,srcH=photo.videoHeight;
         const cropW=Math.min(srcW,srcH*ratio),cropH=Math.min(srcH,cropW/ratio);
-        ctx.drawImage(photo,(srcW-cropW)/2,(srcH-cropH)/2,cropW,cropH,0,0,width,height);
+        const crop=videoCropRect(photo);
+        ctx.drawImage(photo,...crop,0,0,width,height);
     } else ctx.drawImage(photo,0,0,width,height);
     const rgba = ctx.getImageData(0, 0, width, height).data;
     const gray = new Float32Array(width * height);
@@ -1857,10 +2095,11 @@ function drawDetectedEdges(canvas,photo,analysis) {
             const sourceWidth = photo.videoWidth || photo.naturalWidth;
             const sourceHeight = photo.videoHeight || photo.naturalHeight;
             const ratio = width / height;
-            const cropWidth = Math.min(sourceWidth, sourceHeight * ratio);
-            const cropHeight = Math.min(sourceHeight, cropWidth / ratio);
-            ctx.drawImage(photo, (sourceWidth - cropWidth)/2, (sourceHeight - cropHeight)/2,
-                cropWidth, cropHeight, 0, 0, width, height);
+            const cropped=photo.tagName==='VIDEO' ? videoCropRect(photo) : [0,0,sourceWidth,sourceHeight];
+            const cropWidth=Math.min(cropped[2],cropped[3]*ratio);
+            const cropHeight=Math.min(cropped[3],cropWidth/ratio);
+            ctx.drawImage(photo,cropped[0]+(cropped[2]-cropWidth)/2,cropped[1]+(cropped[3]-cropHeight)/2,
+                cropWidth,cropHeight,0,0,width,height);
             const rgba = ctx.getImageData(0, 0, width, height).data;
             const pixels = new Float32Array(width * height);
             for (let i = 0; i < pixels.length; i++) {
@@ -1919,21 +2158,248 @@ function drawDetectedEdges(canvas,photo,analysis) {
         }
         screenBeforeExit = document.querySelector('.screen.active').id;
         stopCamera();
+        FitLive.stop();
         showScreen('exit-screen');
     }
 
     function cancelExit() {
-        if (screenBeforeExit === 'camera1-screen') startCamera(1);
+        if (screenBeforeExit === 'live-adjust-screen') FitLive.open();
+        else if (screenBeforeExit === 'camera1-screen') startCamera(1);
         else if (screenBeforeExit === 'camera2-screen') startCamera(2);
         else showScreen(screenBeforeExit);
     }
 
     function confirmExit() {
         stopCamera();
+        FitLive.stop();
         document.body.innerHTML = '';
         document.body.style.backgroundColor = '#000000';
         window.close();
     }
+</script>
+<script>
+
+// Optional APK-derived live alignment: isolated from the close-up issue detection and guide workflow.
+const FitLive=(()=>{
+    let stream=null,requestId=0,mode='top',last=null,returnScreen='ready-screen';
+    let doorWidth=null;
+    const records={top:{},bottom:{}};
+    const historyValues={left:[],right:[]};
+    const settings={get doorWidth(){return doorWidth||595;}};
+    function byId(id){return document.getElementById(id);}
+    function stop(){requestId++;if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;byId('liveVideo').srcObject=null;}
+    async function open(){
+        const previous=document.querySelector('.screen.active');
+        if(previous && previous.id!=='live-adjust-screen')returnScreen=previous.id;
+        stopCamera();stop();
+        showScreen('live-adjust-screen');
+        if(doorWidth)byId('liveDoorWidth').value=doorWidth;
+        setEdge(mode);
+        const req=requestId;
+        byId('liveHint').textContent='카메라 연결 중';
+        try{
+            const fresh=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+            if(req!==requestId){fresh.getTracks().forEach(t=>t.stop());return;}
+            stream=fresh;const video=byId('liveVideo');video.srcObject=fresh;await video.play();
+            if(req!==requestId)return;
+            const caps=fresh.getVideoTracks()[0].getCapabilities?.()||{};
+            if(caps.focusMode?.includes('continuous'))try{await fresh.getVideoTracks()[0].applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+            loop(req);
+        }catch(e){if(req===requestId)byId('liveHint').textContent='카메라를 열 수 없습니다. HTTPS·권한을 확인하세요.';}
+    }
+    function close(){stop();showScreen(returnScreen==='camera1-screen'||returnScreen==='camera2-screen'?'ready-screen':returnScreen);}
+    function setEdge(value){mode=value==='bottom'?'bottom':'top';
+        byId('liveTop').setAttribute('aria-pressed',String(mode==='top'));
+        byId('liveBottom').setAttribute('aria-pressed',String(mode==='bottom'));
+        historyValues.left.length=historyValues.right.length=0;last=null;
+        byId('liveLeft').textContent=byId('liveRight').textContent='—';
+        byId('liveDetected').innerHTML='';renderRecords();
+    }
+    function setWidth(value){const n=Number(value);doorWidth=Number.isFinite(n)&&n>=300&&n<=1200?n:null;historyValues.left.length=historyValues.right.length=0;last=null;}
+    function grab(){const v=byId('liveVideo');
+        if(!v.videoWidth)return null;
+        const w=400, h=Math.min(1000,Math.max(320,Math.round(w*v.clientHeight/Math.max(1,v.clientWidth))));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        const cropRatio=w/h;
+        const sw=Math.min(v.videoWidth,v.videoHeight*cropRatio),sh=Math.min(v.videoHeight,sw/cropRatio);
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
+        ctx.drawImage(v,(v.videoWidth-sw)/2,(v.videoHeight-sh)/2,sw,sh,0,0,w,h);
+        const rgba=ctx.getImageData(0,0,w,h).data;
+        const pixels=new Float32Array(w*h);
+        for(let i=0;i<pixels.length;i++)pixels[i]=.299*rgba[4*i]+.587*rgba[4*i+1]+.114*rgba[4*i+2];
+        return {pixels,width:w,height:h,canvas};
+    }
+    function findGapLines(pixels, width, height, rowFrom, rowTo) {
+        const r0 = Math.max(0, Math.round(height * rowFrom)), r1 = Math.min(height - 1, Math.round(height * rowTo));
+        const bands = 4;
+        const profiles = Array.from({ length: bands }, () => new Float32Array(width));
+        const counts = new Uint16Array(bands);
+        for (let y = r0; y <= r1; y += 2) {
+            const b = Math.min(bands - 1, Math.floor((y - r0) * bands / (r1 - r0 + 1)));
+            counts[b]++;
+            const row = y * width;
+            for (let x = 0; x < width; x++) profiles[b][x] += pixels[row + x];
+        }
+        profiles.forEach((p, b) => { for (let x = 0; x < width; x++) p[x] /= Math.max(1, counts[b]); });
+        const mean = new Float32Array(width);
+        for (let x = 0; x < width; x++) mean[x] = profiles.reduce((sum, p) => sum + p[x], 0) / bands;
+        const win = Math.max(6, Math.round(width * .03));
+        const depthAt = (p, x) => {
+            let leftMax = -1, rightMax = -1;
+            for (let i = x - win; i <= x - 3; i++) if (p[i] > leftMax) leftMax = p[i];
+            for (let i = x + 3; i <= x + win; i++) if (p[i] > rightMax) rightMax = p[i];
+            return Math.min(leftMax, rightMax) - p[x];
+        };
+        const found = [];
+        for (let x = win; x < width - win; x++) {
+            if (mean[x] > mean[x - 1] || mean[x] > mean[x + 1] || mean[x] > mean[x - 2] || mean[x] > mean[x + 2]) continue;
+            const depth = depthAt(mean, x);
+            if (depth < 10) continue;
+            if (profiles.filter(p => depthAt(p, x) >= 5).length < 3) continue;
+            const a = mean[x - 1], b = mean[x], c = mean[x + 1];
+            const denom = a - 2 * b + c;
+            const sub = denom > 0 ? Math.max(-.5, Math.min(.5, (a - c) / (2 * denom))) : 0;
+            found.push({ x: x + sub, depth });
+        }
+        found.sort((p, q) => q.depth - p.depth);
+        const kept = [];
+        for (const v of found) if (!kept.some(k => Math.abs(k.x - v.x) < win)) kept.push(v);
+        return kept;
+    }
+
+    // Sub-pixel door edge per column, then a robust straight-line fit.
+    function fitDoorEdge(pixels, width, height, x0, x1, top) {
+        const yA = Math.round(height * .28), yB = Math.round(height * .72);
+        const step = Math.max(2, Math.round(width / 400));
+        const col = (x, y) => (pixels[y * width + x - 1] + pixels[y * width + x] + pixels[y * width + x + 1]) / 3;
+        const points = [];
+        for (let x = Math.max(1, Math.round(x0)); x <= Math.min(width - 2, Math.round(x1)); x += step) {
+            const grads = new Float32Array(yB - yA);
+            let maxAbs = 0;
+            for (let y = yA + 2; y < yB - 2; y++) {
+                const g = col(x, y + 2) - col(x, y - 2);
+                grads[y - yA] = g;
+                if (Math.abs(g) > maxAbs) maxAbs = Math.abs(g);
+            }
+            if (maxAbs < 12) continue;
+            const threshold = Math.max(12, maxAbs * .5);
+            // Door edge = the strong edge closest to the door body (below for top edges, above for bottom edges).
+            let pick = -1;
+            if (top) {
+                for (let i = grads.length - 3; i >= 2; i--) {
+                    const g = Math.abs(grads[i]);
+                    if (g >= threshold && g >= Math.abs(grads[i - 1]) && g >= Math.abs(grads[i + 1])) { pick = i; break; }
+                }
+            } else {
+                for (let i = 2; i < grads.length - 2; i++) {
+                    const g = Math.abs(grads[i]);
+                    if (g >= threshold && g >= Math.abs(grads[i - 1]) && g >= Math.abs(grads[i + 1])) { pick = i; break; }
+                }
+            }
+            if (pick < 0) continue;
+            const a = Math.abs(grads[pick - 1]), b = Math.abs(grads[pick]), c = Math.abs(grads[pick + 1]);
+            const denom = a - 2 * b + c;
+            const sub = denom < 0 ? Math.max(-.5, Math.min(.5, (a - c) / (2 * denom))) : 0;
+            points.push({ x, y: yA + pick + sub, sign: Math.sign(grads[pick]) });
+        }
+        const columns = Math.max(1, Math.floor((x1 - x0) / step));
+        if (points.length < Math.max(10, columns * .4)) return null;
+        const sign = Math.sign(points.reduce((sum, p) => sum + p.sign, 0)) || 1;
+        let inliers = points.filter(p => p.sign === sign);
+        const xc = (x0 + x1) / 2;
+        let fit = null;
+        for (let pass = 0; pass < 3; pass++) {
+            if (inliers.length < Math.max(8, columns * .3)) return null;
+            const n = inliers.length;
+            const mx = inliers.reduce((s, p) => s + p.x - xc, 0) / n;
+            const my = inliers.reduce((s, p) => s + p.y, 0) / n;
+            let sxx = 0, sxy = 0;
+            for (const p of inliers) { sxx += (p.x - xc - mx) ** 2; sxy += (p.x - xc - mx) * (p.y - my); }
+            const slope = sxx ? sxy / sxx : 0;
+            fit = { a: my - slope * mx, slope, xc };
+            const residuals = points.map(p => Math.abs(p.y - (fit.a + fit.slope * (p.x - xc))));
+            const sorted = residuals.slice().sort((p, q) => p - q);
+            const limit = Math.max(1.5, sorted[Math.floor(sorted.length / 2)] * 3);
+            inliers = points.filter((p, i) => p.sign === sign && residuals[i] <= limit);
+        }
+        if (inliers.length < Math.max(8, columns * .35)) return null;
+        return { at: x => fit.a + fit.slope * (x - fit.xc), slope: fit.slope, count: inliers.length };
+    }
+
+    function measureWide(pixels, width, height, top) {
+        const rowFrom = top ? .56 : .08, rowTo = top ? .92 : .44;
+        const gaps = findGapLines(pixels, width, height, rowFrom, rowTo);
+        const strongest = (from, to) => gaps.filter(g => g.x >= width * from && g.x <= width * to).sort((p, q) => q.depth - p.depth)[0] || null;
+        const gl = strongest(.02, .32), gr = strongest(.68, .98);
+        const result = { gl, gr, mmPerPx: null, center: null, left: null, right: null };
+        if (!gl || !gr || gr.x - gl.x < width * .45) return result;
+        result.mmPerPx = settings.doorWidth / (gr.x - gl.x);
+        const margin = width * .015;
+        result.center = fitDoorEdge(pixels, width, height, gl.x + margin, gr.x - margin, top);
+        if (!result.center) return result;
+        const leftN = fitDoorEdge(pixels, width, height, Math.max(2, gl.x - width * .16), gl.x - margin, top);
+        const rightN = fitDoorEdge(pixels, width, height, gr.x + margin, Math.min(width - 3, gr.x + width * .16), top);
+        // Positive = neighbour edge sits higher in the picture than the reference door edge => neighbour is higher.
+        if (leftN) result.left = { step: (result.center.at(gl.x) - leftN.at(gl.x)) * result.mmPerPx, fit: leftN };
+        if (rightN) result.right = { step: (result.center.at(gr.x) - rightN.at(gr.x)) * result.mmPerPx, fit: rightN };
+        return result;
+    }
+
+
+    function median(v){const a=v.slice().sort((x,y)=>x-y);return a.length?a[Math.floor(a.length/2)]:null;}
+    function loop(req){
+        if(req!==requestId)return;
+        const video=byId('liveVideo');
+        if(document.hidden ||video.readyState<2){setTimeout(()=>loop(req),300);return;}
+        try{
+            const frame=grab();if(!frame){setTimeout(()=>loop(req),250);return;}
+            const W=frame.width,H=frame.height, measured=measureWide(frame.pixels,W,H,mode==='top');
+            const elements=[];
+            const seg=(fit,x0,x1)=>`<path class="line-detected" d="M${(x0/W*100).toFixed(2)} ${(fit.at(x0)/H*100).toFixed(2)} L${(x1/W*100).toFixed(2)} ${(fit.at(x1)/H*100).toFixed(2)}"/>`;
+            if(measured.center)elements.push(seg(measured.center,measured.gl.x+10,measured.gr.x-10));
+            if(measured.left)elements.push(seg(measured.left.fit,Math.max(2,measured.gl.x-90),measured.gl.x-10));
+            if(measured.right)elements.push(seg(measured.right.fit,measured.gr.x+10,Math.min(W-3,measured.gr.x+90)));
+            byId('liveDetected').innerHTML=elements.join('');
+            for(const side of ['left','right']) {
+                const history=historyValues[side];history.push(measured[side]?.step??null);if(history.length>7)history.shift();
+            }
+            const smoothed=side=>{const v=historyValues[side].filter(x=>x!=null);return v.length>=3?median(v):null;};
+            const left=smoothed('left'),right=smoothed('right');
+            last=(left!=null||right!=null)&&measured.center?{left,right,stamp:Date.now()}:null;
+            const draw=(side,value)=>{
+                byId(side==='left'?'liveLeft':'liveRight').textContent=value==null?'—':(value>0?'▲ ':value<0?'▼ ':'')+Math.abs(value).toFixed(1)+'mm*';
+                byId(side==='left'?'liveLeftStatus':'liveRightStatus').textContent=value==null?'검출되지 않음':value>0?'인접 도어가 높게 추정됨':value<0?'인접 도어가 낮게 추정됨':'높이 차이 적음';
+            };
+            draw('left',left);draw('right',right);
+            byId('liveHint').textContent=!doorWidth?'도어 폭 미입력 · 595mm 가정 환산 표시 (권장: 모델별 실제 폭 입력)':
+                !measured.gl||!measured.gr?'기준 도어 양쪽 세로 이음부가 보이도록 촬영하세요':
+                !measured.center?'도어 끝을 화면 가로선에 맞춰주세요':
+                !last?'인접한 도어의 모서리를 함께 비춰주세요':'*원근·촬영각도 미보정 참고치 (자동 판정 미사용)';
+        }catch(e){byId('liveHint').textContent='경계선 인식 어려움 · 위치를 조정해 주세요';}
+        setTimeout(()=>loop(req),260);
+    }
+    function record(phase){
+        if(!last){byId('liveHint').textContent='안정적으로 검출된 참고값이 없습니다.';return;}
+        let photo=null;
+        try{photo=grab().canvas.toDataURL('image/jpeg',.75);}catch{}
+        records[mode][phase]={left:last.left,right:last.right,photo};
+        renderRecords();
+    }
+    function renderRecords(){
+        const r=records[mode],root=byId('liveRecords');
+        const fmt=v=>v==null?'—':(v>0?'+':'')+v.toFixed(1)+'mm*';
+        if(!r.before&&!r.after){root.textContent='참고 측정값을 기록하면 수리 전후 변화가 표시됩니다.';return;}
+        root.innerHTML=`<b>${mode==='top'?'상단':'하단'} · 참고 측정 기록</b><p>왼쪽 인접 도어: 수리 전 ${fmt(r.before?.left)} → 수리 후 ${fmt(r.after?.left)}</p><p>오른쪽 인접 도어: 수리 전 ${fmt(r.before?.right)} → 수리 후 ${fmt(r.after?.right)}</p>`;
+        for(const label of ['before','after'])if(r[label]?.photo){const img=document.createElement('img');img.src=r[label].photo;img.alt=label==='before'?'수리 전':'수리 후';img.style.marginRight='5px';root.appendChild(img);}
+    }
+    byId('livePanel').addEventListener('click',async(e)=>{
+        const t=stream?.getVideoTracks()?.[0];if(!t)return;
+        const rect=byId('livePanel').getBoundingClientRect();
+        try{await t.applyConstraints({advanced:[{pointsOfInterest:[{x:(e.clientX-rect.left)/rect.width,y:(e.clientY-rect.top)/rect.height}]}]});}catch{}
+    });
+    return {open,close,stop,setEdge,setWidth,record};
+})();
+
 </script>
 
 </body>
