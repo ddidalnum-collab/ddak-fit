@@ -62,10 +62,11 @@
 
         /* 3 & 5. Camera View */
         .camera-container { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.45; pointer-events: none; mix-blend-mode: screen; filter: drop-shadow(0 0 2px #00ff66); }
+        #videoFeed, #videoFeed2 { width: 100%; height: 100%; object-fit: cover; }
+        .ghost-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.42; pointer-events: none; mix-blend-mode: normal; }
         
         .shutter-btn:disabled { opacity: 0.45; }
-        .photo-review { width: min(100%, 360px); }
+        #pass-screen .btn-group, .photo-review { width: min(100%, 360px); }
         .photo-review { margin: 0 0 18px; text-align: left; }
         .photo-review summary { color: var(--primary-dark); font-weight: 800; cursor: pointer; }
         .review-images { display: grid; place-items: center; margin: 10px 0; background: #111; border-radius: 10px; overflow: hidden; }
@@ -75,15 +76,31 @@
         .level-readings { display: flex; gap: 12px; margin: 18px 0; }
         .level-readings div { flex: 1; background: #eef5ff; padding: 12px; border-radius: 10px; text-align: center; }
         .level-readings strong { display: block; margin-top: 6px; color: var(--primary-dark); font-size: 24px; }
+        .camera-back { position: absolute; top: 68px; left: 12px; z-index: 16; color: #fff; background: #242424; border: 0; border-radius: 8px; padding: 9px 12px; }
+        .camera-nav { display: flex; gap: 6px; padding: 0; background: transparent; }
+        .camera-nav button { color: #fff; background: #242424; border: 0; border-radius: 8px; padding: 9px 12px; cursor: pointer; }
+        .auto-shot-toggle { left: auto; right: 12px; font-size: 13px; }
+        .level-bar { text-align: center; }
 
-        .camera-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 16px; }
+        .camera-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px 16px; z-index: 2; }
         .grid-line-h { position: absolute; left: 5%; width: 90%; height: 1.5px; background: rgba(255,255,255,0.35); }
+        .grid-line-h.top { top: 22%; }
         .grid-line-h.mid { top: 50%; }
+        .grid-line-h.bottom { top: 78%; }
         .grid-line-v { position: absolute; top: 10%; height: 80%; width: 1.5px; background: rgba(255,255,255,0.3); }
+        .grid-line-v.left { left: 25%; }
         .grid-line-v.center { left: 50%; }
+        .grid-line-v.right { left: 75%; }
         
+        .level-bar { background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); color: white; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 800; align-self: center; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.2); }
+        .level-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--success); }
+        .level-dot.tilt { background: var(--danger); }
 
+        .slider-box { position: absolute; bottom: 85px; width: 80%; left: 10%; background: rgba(0,0,0,0.65); padding: 8px 14px; border-radius: 20px; display: flex; align-items: center; gap: 10px; z-index: 15; }
+        .slider-box span { color: white; font-size: 11px; font-weight: bold; white-space: nowrap; }
+        .slider-box input { flex: 1; }
 
+        .shutter-bar { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 15; }
         .shutter-btn { width: 58px; height: 58px; border-radius: 50%; background: white; border: 4px solid var(--primary); cursor: pointer; display: flex; justify-content: center; align-items: center; }
         .shutter-inner { width: 44px; height: 44px; border-radius: 50%; background: var(--primary); }
 
@@ -135,6 +152,9 @@
         .guide-container { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
         .status-badge { background: #ffebee; color: var(--danger); font-size: 13.5px; font-weight: 900; padding: 8px 12px; border-radius: 8px; text-align: center; }
 
+        #pass-screen { background: #ffffff; justify-content: safe center; align-items: center; text-align: center; padding: 24px; }
+        .pass-title { font-size: 22px; font-weight: 900; color: var(--text-dark); margin-bottom: 8px; }
+        .pass-sub { font-size: 14px; color: var(--text-sub); font-weight: 800; margin-bottom: 25px; }
 
         /* Exit Screen */
         #exit-screen { background: #ffffff; justify-content: center; align-items: center; text-align: center; padding: 30px; }
@@ -145,42 +165,58 @@
         .btn-half { flex: 1; padding: 14px 0; border-radius: 10px; font-size: 15px; font-weight: 900; cursor: pointer; border: none; }
         .btn-cancel { background: #eeeeee; color: #444; }
         .btn-confirm { background: var(--primary); color: white; }
-        body, .phone-frame { height: 100vh; height: 100dvh; }
-        [hidden] { display: none !important; }
-        .unit-picker { display: flex; gap: 6px; border: 0; margin-top: 16px; }
-        .unit-picker legend { margin-bottom: 8px; font-size: 13px; font-weight: 800; }
-        .unit-picker label { flex: 1; position: relative; min-width: 0; }
-        .unit-picker input { position: absolute; opacity: 0; }
-        .unit-picker span { display: block; padding: 11px 0; text-align: center; border: 1px solid #d0d5dd; border-radius: 9px; font-weight: 800; font-size: 14px; cursor: pointer; }
-        .unit-picker input:checked + span { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
-        .unit-picker input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
-        .plan-summary { font-size: 13px; margin-top: 12px; font-weight: 800; color: var(--primary-dark); }
-        .main-action-btn:disabled { opacity: .55; cursor: default; }
-        .shot-heading, .capture-controls { padding: 10px 16px; background: white; }
-        .shot-heading h2 { font-size: 17px; margin-bottom: 4px; }
-        .shot-heading p, #captureStatus { font-size: 13px; line-height: 1.45; }
-        #closeVideo { width: 100%; height: 100%; object-fit: cover; }
-        #capture-screen .camera-container { min-height: 170px; }
-        .capture-controls { display: grid; justify-items: center; gap: 7px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
-        #afterControls { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; font-size: 13px; }
-        #afterControls.before-controls { visibility: hidden; }
-        #captureStatus { min-height: 38px; display: grid; place-items: center; text-align: center; }
-        #afterControls label { display: inline-flex; gap: 5px; align-items: center; }
-        #afterControls input[type="range"] { width: 85px; }
-        .results-body { padding: 18px; }
-        .results-group { margin: 18px 0; }
-        .results-group h2 { font-size: 15px; margin-bottom: 8px; }
-        .result-row { margin-bottom: 8px; }
-        .result-row h3 { font-size: 15px; color: var(--text-dark); }
-        .result-status { display: inline-block; margin-bottom: 8px; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 800; color: #444; background: #f0f1f3; }
-        .result-status.adjust { background: #ffebee; color: #a51c29; }
-        .result-status.review { background: #fff2d7; color: #704900; }
-        .result-status.pass { background: #e7f6ed; color: #176438; }
-        .guide-shot-list { display: grid; gap: 6px; }
-        .guide-shot-list button[aria-pressed="true"] { border-color: var(--primary-dark); color: var(--primary-dark); }
-        .result-row p { margin-bottom: 6px; }
-        .result-row .btn-group { margin-top: 10px; }
-        .result-row .photo-review { margin: 10px 0 0; width: 100%; }
+
+        /* 2~6대 근접 촬영 단계 */
+        .ready-content { justify-content: flex-start; }
+        .fridge-count-title { font-size: 14px; font-weight: 900; color: #252c38; margin: 4px 0 10px; }
+        .fridge-count-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+        .fridge-count-btn { padding: 11px 3px; border-radius: 10px; border: 1.5px solid #cdd6e2; background: #fff; color: #344054; font-size: 15px; font-weight: 900; cursor: pointer; }
+        .fridge-count-btn.active { background: #eaf4ff; color: #005ed1; border-color: #0076ff; box-shadow: inset 0 0 0 1px #0076ff; }
+        .fridge-count-btn:focus-visible, .review-selector:focus-visible { outline: 3px solid #67b3ff; outline-offset: 2px; }
+        .plan-summary { background: #f0f7ff; color: #205280; margin-top: 12px; border-radius: 9px; padding: 10px; font-size: 12.5px; font-weight: 750; line-height: 1.6; }
+        .compact-info { font-size: 12px; color: #637083; margin-top: 8px; line-height: 1.5; }
+        .main-action-btn:disabled { background: #b8c7d8; box-shadow: none; cursor: not-allowed; }
+        .camera-step-card { position: absolute; z-index: 11; top: 124px; left: 12px; right: 12px; background: rgba(4,18,38,.80); color: white; border: 1px solid rgba(255,255,255,.22); border-radius: 12px; padding: 13px 14px; pointer-events: none; }
+        .camera-step-count { font-size: 12px; font-weight: 800; color: #add8ff; margin-bottom: 5px; }
+        .camera-step-title { font-size: 16px; font-weight: 900; margin-bottom: 5px; }
+        .camera-step-desc { font-size: 12.5px; line-height: 1.45; color: #f0f6ff; }
+        .camera-previous { position: absolute; z-index: 16; bottom: 96px; left: 14px; padding: 10px 12px; border-radius: 9px; border: 1px solid #aab8ce; background: #fff; color: #20466e; font-weight: 800; }
+        .camera-previous:disabled { display: none; }
+        .auto-shot-toggle { top: 68px; bottom: auto; }
+        .slider-box { bottom: 99px; width: min(64%, 265px); left: auto; right: 12px; }
+        .shot-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+        .shot-chip { font-size: 11px; border-radius: 6px; padding: 5px 7px; background: #edf2f8; color: #416078; font-weight: 800; }
+        .result-container { padding: 22px 18px 30px; flex-direction: column; align-items: stretch; gap: 13px; overflow-y: auto; }
+        .result-container .pass-title, .result-container .pass-sub { text-align: left; margin: 0; }
+        .result-container .pass-title { color: #175fba; }
+        .result-container .pass-sub { font-weight: 600; line-height: 1.65; }
+        .review-selector { width: 100%; min-height: 46px; padding: 10px; font-size: 14px; background: #fff; border: 1px solid #b7c9de; border-radius: 10px; color: #172b45; font-weight: 700; }
+        .review-compare { padding: 13px; border: 1px solid #d7e2ef; border-radius: 12px; background: #f7fbff; }
+        .review-compare .review-images img { height: min(44vh, 380px); object-fit: contain; }
+        .review-compare .review-images { background: #151c25; }
+        .review-caption { font-size: 12.5px; font-weight: 800; color: #34516d; margin: 8px 0; }
+        .review-images img { max-width: 100%; }
+        @media (max-height: 650px) { .camera-step-card { top: 102px; padding: 9px 12px; } .camera-step-title { font-size: 14px; } .camera-step-desc { font-size: 11px; } }
+
+        /* 수리 후 기준선 검출 HUD: 촬영 편의를 위한 조건이며 수평 판정이 아님 */
+        .auto-hint { max-width: 92%; flex-wrap: wrap; justify-content: center; line-height: 1.4; }
+        .auto-hold-progress { display: block; height: 3px; width: 0; background: #78d5ff; border-radius: 4px; transition: width .16s linear; }
+        .result-tab-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .result-tab { min-height: 50px; padding: 10px 7px; border: 1px solid #d4dce7; background: #f3f5f8; border-radius: 9px; color: #496074; font-size: 13px; font-weight: 900; cursor: pointer; }
+        .result-tab.active { background: #e8f3ff; border-color: #0076ff; color: #0055b6; }
+        #restorePane[hidden], #alignmentPane[hidden] { display: none !important; }
+        #restorePane, #alignmentPane { display: flex; flex-direction: column; gap: 12px; }
+        .analysis-intro { font-size: 13px; line-height: 1.6; color: #3e5368; margin-bottom: 12px; }
+        .alignment-photos { display: flex; gap: 8px; margin: 12px 0; overflow-x: auto; }
+        .alignment-shot { flex: 1 0 46%; min-width: 0; background: #f4f8fc; border-radius: 9px; overflow: hidden; border: 1px solid #d5e2ee; }
+        .alignment-shot img { display: block; width: 100%; height: 210px; object-fit: contain; background: #1a2028; }
+        .alignment-shot-label { font-size: 11.5px; font-weight: 750; color: #45617b; padding: 8px; line-height: 1.4; }
+        .note-attention { color: #79560d; font-size: 12px; line-height: 1.55; padding: 10px; border-radius: 8px; background: #fff8e8; }
+        .review-progress { color: #1c639e; font-size: 12px; font-weight: 850; margin: 12px 0; }
+        .alignment-nav { display: flex; gap: 8px; }
+        .alignment-nav .sub-action-btn { font-size: 12px; min-width: 0; padding: 12px 8px; }
+        .camera-step-card { background: rgba(5, 19, 36, .84); }
+        @media (max-width: 370px) { .result-tab { font-size: 11.5px; } .alignment-shot img { height: 160px; } }
     </style>
 </head>
 <body>
@@ -188,22 +224,19 @@
 <div class="phone-frame">
     <!-- 1. Splash Screen -->
     <div id="splash-screen" class="screen active">
-        <div class="splash-top">수리 전 완벽했던 그 수평 그대로!</div>
+        <div class="splash-top">수리 후 도어의 정렬을 정확히 확인!</div>
         <div class="splash-img-box">
             <img src="fridge_fit_main.png" alt="비스포크 인피니트 라인" onerror="this.onerror=null; this.src='icon.png';">
         </div>
         <div class="splash-title">DDak-Fit<span>(딱-핏)</span></div>
-        <div class="splash-sub">냉장고 수리 전후 도어 정렬 확인</div>
+        <div class="splash-sub">냉장고 수리 전후 복귀 비교 · 도어 정렬 점검</div>
         <div class="splash-footer">Made by 디지털남울산센터</div>
     </div>
 
-    <!-- 2. Ready Screen -->
+    <!-- 2. 수리 전 촬영 준비: 대수 선택 -->
     <div id="ready-screen" class="screen">
         <div class="app-header">
-            <div class="brand-box">
-                <div class="brand-title">DDak-Fit</div>
-                <div class="brand-sub">설치 상태 확인</div>
-            </div>
+            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub">수리 전 촬영 준비</div></div>
             <div class="header-actions">
                 <button class="header-btn" onclick="openManualDirect()">📖 매뉴얼</button>
                 <button type="button" class="header-btn header-exit" onclick="openExitScreen()">종료</button>
@@ -211,55 +244,52 @@
         </div>
         <div class="ready-content">
             <div class="ready-card">
-                <div class="ready-badge">STEP 1</div>
-                <h1 class="ready-title">고객댁에는 냉장고가 몇 대 나란히 설치돼 있나요?</h1>
-                <p class="ready-desc">수리 전에 상부 가구장 간격과 도어 이음부의 상단·하단을 가까이 찍습니다. 수리 후에는 같은 위치를 다시 찍어 달라진 곳을 확인합니다.</p>
-                <fieldset class="unit-picker">
-                    <legend>냉장고 대수</legend>
-                    <label><input type="radio" name="units" value="2"><span>2대</span></label>
-                    <label><input type="radio" name="units" value="3"><span>3대</span></label>
-                    <label><input type="radio" name="units" value="4"><span>4대</span></label>
-                    <label><input type="radio" name="units" value="5"><span>5대</span></label>
-                    <label><input type="radio" name="units" value="6"><span>6대</span></label>
-                </fieldset>
-                <p class="ready-notice">앱이 왼쪽부터 냉장고에 번호를 붙이고, 찍을 위치를 순서대로 안내합니다. 수리 후에는 같은 렌즈로 화면에 겹쳐 보이는 기준 사진에 맞춰주세요.</p>
-                <p id="shotPlan" class="plan-summary" aria-live="polite">대수를 선택하면 촬영 위치와 장수가 표시됩니다.</p>
+                <div class="ready-badge">STEP 1 · 설치 대수 선택</div>
+                <div class="ready-title">냉장고를 빼내기 전,<br>설치된 대수를 선택해 주세요.</div>
+                <p class="fridge-count-title">나란히 설치된 냉장고는 몇 대인가요?</p>
+                <div class="fridge-count-grid" role="group" aria-label="냉장고 대수">
+                    <button class="fridge-count-btn" type="button" data-count="2" aria-pressed="false" onclick="chooseCount(2)">2대</button>
+                    <button class="fridge-count-btn" type="button" data-count="3" aria-pressed="false" onclick="chooseCount(3)">3대</button>
+                    <button class="fridge-count-btn" type="button" data-count="4" aria-pressed="false" onclick="chooseCount(4)">4대</button>
+                    <button class="fridge-count-btn" type="button" data-count="5" aria-pressed="false" onclick="chooseCount(5)">5대</button>
+                    <button class="fridge-count-btn" type="button" data-count="6" aria-pressed="false" onclick="chooseCount(6)">6대</button>
+                </div>
+                <p id="planSummary" class="plan-summary" aria-live="polite">대수를 선택하면 기준 도어와 촬영 순서가 표시됩니다.</p>
+                <div class="ready-notice">
+                    📸 <strong>수리 전후 동일 부위 근접 촬영</strong><br>
+                    ① 기준 도어 ↔ 상부 가구장 하단 간격<br>
+                    ② 모든 좌우 도어 이음부 상단<br>
+                    ③ 모든 좌우 도어 이음부 하단<br>
+                    <span class="compact-info">수리 전은 설치 상태를 기록하고, 수리 후에는 고스트 사진을 참고해 같은 부위를 촬영합니다. 복귀 비교와 도어 정렬 점검은 구분합니다.</span>
+                </div>
             </div>
             <div class="btn-group">
-                <button class="main-action-btn" id="startBefore" disabled onclick="startBefore()">수리 전 촬영 시작</button>
+                <button id="beginBeforeBtn" class="main-action-btn" onclick="beginBeforeCapture()" disabled>수리 전 근접 촬영 시작</button>
                 <button class="sub-action-btn" onclick="openLevel()">별도 도구 · 휴대폰 수평계</button>
                 <button class="sub-action-btn" onclick="openManualDirect()">📖 수평/단차 조치 매뉴얼 바로보기</button>
             </div>
         </div>
     </div>
 
-    <div id="capture-screen" class="screen">
-        <div class="app-header">
-            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub" id="shotProgress"></div></div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="leaveCapture()">뒤로</button>
-                <button class="header-btn" onclick="returnHome()">처음으로</button>
-            </div>
-        </div>
-        <div class="shot-heading">
-            <h2 id="shotTitle"></h2>
-            <p id="shotInstruction"></p>
-        </div>
+    <!-- 3. 수리 전 부위별 근접 촬영 -->
+    <div id="camera1-screen" class="screen">
         <div class="camera-container">
-            <video id="closeVideo" playsinline autoplay muted></video>
-            <img id="ghostImg" class="ghost-overlay" alt="" hidden>
-            <div class="camera-overlay" aria-hidden="true">
-                <div class="grid-line-h mid"></div>
-                <div class="grid-line-v center" id="joinGuide"></div>
+            <video id="videoFeed" playsinline autoplay muted></video>
+            <div class="camera-back camera-nav">
+                <button type="button" onclick="leaveCamera(1)">뒤로</button>
+                <button type="button" onclick="returnHome()">처음으로</button>
             </div>
-        </div>
-        <div class="capture-controls">
-            <p id="captureStatus" role="status"></p>
-            <div id="afterControls" class="before-controls" inert>
-                <label><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
-                <label>겹침 농도 <input type="range" min="0" max="90" value="45" oninput="byId('ghostImg').style.opacity = this.value / 100"></label>
+            <div class="camera-overlay">
+                <div class="level-bar"><div id="levelDot1" class="level-dot"></div><span id="levelText1">기울기 센서 대기 중</span></div>
+                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
             </div>
-            <button id="captureButton" class="shutter-btn" onclick="takeCloseup()" aria-label="사진 촬영" disabled><span class="shutter-inner"></span></button>
+            <div class="camera-step-card">
+                <div id="beforeStepCount" class="camera-step-count"></div>
+                <div id="beforeStepTitle" class="camera-step-title"></div>
+                <div id="beforeStepDesc" class="camera-step-desc"></div>
+            </div>
+            <button id="beforePrevious" class="camera-previous" type="button" onclick="previousShot(1)">← 이전 부위</button>
+            <div class="shutter-bar"><button class="shutter-btn" onclick="takeBeforePhoto()" aria-label="수리 전 현재 부위 촬영"><div class="shutter-inner"></div></button></div>
         </div>
     </div>
 
@@ -272,14 +302,14 @@
             </div>
             <div class="header-actions">
                 <button class="header-btn" onclick="returnHome()">처음으로</button>
-                <button class="header-btn" onclick="openManualDirect()">매뉴얼</button>
+                <button class="header-btn" onclick="openManualDirect()">📖</button>
                 <button type="button" class="header-btn header-exit" onclick="openExitScreen()">종료</button>
             </div>
         </div>
         <div class="notice-container">
             <div class="card-box" style="border-left: 5px solid var(--success);">
-                <h3 style="color:var(--success);">📸 수리 전 사진 등록 완료</h3>
-                <p>촬영한 부위가 기준 사진으로 등록되었습니다. 재안착 후 앱 안내에 따라 같은 위치를 다시 촬영해 주세요.</p>
+                <h3 style="color:var(--success);">📸 수리 전 부위별 사진 등록 완료</h3>
+                <p id="beforeCompletedMessage">수리 전 촬영이 끝났습니다. 수리 완료 후 각 부위의 기준 사진을 겹쳐 같은 순서로 촬영해 주세요.</p>
             </div>
 
             <div class="card-box alert">
@@ -308,7 +338,34 @@
                 <p>3. 후면 벌어짐 방지 브라켓 정상 결합 (p.77)</p>
             </div>
 
-            <button class="main-action-btn" style="margin-top:auto;" onclick="startAfter()">수리 후 비교 촬영 시작</button>
+            <button class="main-action-btn" style="margin-top:auto;" onclick="startCamera(2)">수리 후 동일 부위 재촬영 시작</button>
+        </div>
+    </div>
+
+    <!-- 5. 수리 후 부위별 고스트 오버레이 재촬영 -->
+    <div id="camera2-screen" class="screen">
+        <div class="camera-container">
+            <video id="videoFeed2" playsinline autoplay muted></video>
+            <img id="ghostImg" class="ghost-overlay" alt="현재 부위의 수리 전 기준 사진">
+            <div class="camera-back camera-nav">
+                <button type="button" onclick="leaveCamera(2)">뒤로</button>
+                <button type="button" onclick="returnHome()">처음으로</button>
+            </div>
+            <label class="camera-back auto-shot-toggle"><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
+            <div class="camera-overlay">
+                <div class="level-bar auto-hint"><span id="afterCameraHint" role="status" aria-live="polite">기준선 찾는 중</span><span id="autoHoldProgress" class="auto-hold-progress" aria-hidden="true"></span></div>
+                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
+            </div>
+            <div class="camera-step-card">
+                <div id="afterStepCount" class="camera-step-count"></div>
+                <div id="afterStepTitle" class="camera-step-title"></div>
+                <div id="afterStepDesc" class="camera-step-desc"></div>
+            </div>
+            <button id="afterPrevious" class="camera-previous" type="button" onclick="previousShot(2)">← 이전 부위</button>
+            <div class="slider-box">
+                <span>고스트</span><input type="range" id="ghostOpacity" min="10" max="90" value="42" oninput="changeGhostOpacity(this.value)" aria-label="고스트 사진 투명도">
+            </div>
+            <div class="shutter-bar"><button class="shutter-btn" onclick="takeAfterPhoto()" aria-label="수리 후 현재 부위 촬영"><div class="shutter-inner"></div></button></div>
         </div>
     </div>
 
@@ -343,8 +400,6 @@
             </div>
         </div>
         <div class="guide-container">
-            <p id="manualPickHint" class="ready-desc" hidden>일반 조정 매뉴얼입니다. 아래 그림에서 확인할 위치를 선택하세요.</p>
-            <div id="guideShotList" class="guide-shot-list" aria-label="단차가 감지된 부위" hidden></div>
             <p class="ready-desc">아래 GIF는 빌트인 모델 조정 예시입니다. 다른 모델은 해당 제품 설명서를 확인하세요.</p>
             <div class="status-badge" id="failReasonText" style="display:none;"></div>
 
@@ -381,13 +436,13 @@
                 </div>
 
                 <!-- State Toggle -->
-                <div id="guideStates" class="state-selector-bar" hidden>
+                <div class="state-selector-bar">
                     <button id="btnStateLow" class="state-btn active" onclick="setPartState('low')">다리 쪽이 낮음 ▼</button>
                     <button id="btnStateHigh" class="state-btn" onclick="setPartState('high')">다리 쪽이 높음 ▲</button>
                 </div>
 
                 <!-- Action Card -->
-                <div id="guideActionCard" class="action-guide-card" hidden>
+                <div class="action-guide-card">
                     <div class="guide-action-header">
                         <span id="guideTargetTitle" class="target-title">우측 Leg(다리) 조치법</span>
                         <span id="guideManualTag" class="manual-tag">매뉴얼 p.78</span>
@@ -399,23 +454,64 @@
                 </div>
             </div>
 
-            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;" onclick="retryShot(guideShotIndex)">조정한 부위 다시 촬영</button>
+            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;display:none;" onclick="revisitAfterCapture()">조정 후 수리 후 사진 다시 촬영</button>
         </div>
     </div>
 
-    <div id="results-screen" class="screen">
-        <div class="app-header">
-            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub">촬영 결과</div></div>
-            <div class="header-actions">
-                <button class="header-btn" onclick="returnHome()">처음으로</button>
-                <button class="header-btn" onclick="openExitScreen()">종료</button>
-            </div>
+    <!-- 7. 복귀 비교 / 수리 후 정렬 점검: 임의의 mm·PASS/FAIL 판정 없음 -->
+    <div id="pass-screen" class="screen result-container">
+        <div id="resultTitle" class="pass-title">촬영 완료 · 도어 정렬 확인</div>
+        <div id="resultDetail" class="pass-sub"></div>
+        <div class="result-tab-row" role="tablist" aria-label="결과 보기">
+            <button id="restoreTab" type="button" role="tab" aria-selected="true" class="result-tab active" onclick="switchResultMode('restore')">① 수리 전후 복귀 비교</button>
+            <button id="alignmentTab" type="button" role="tab" aria-selected="false" class="result-tab" onclick="switchResultMode('alignment')">② 수리 후 도어 정렬</button>
         </div>
-        <div class="results-body">
-            <h1 class="ready-title" id="resultTitle"></h1>
-            <p id="resultSummary" class="ready-desc"></p>
-            <div id="resultRows"></div>
-            <button class="sub-action-btn" onclick="openManualDirect()">일반 조정 매뉴얼 보기</button>
+        <section id="restorePane" role="tabpanel" aria-labelledby="restoreTab">
+            <div class="review-compare">
+                <label class="fridge-count-title" for="reviewSelect">비교할 촬영 부위</label>
+                <select id="reviewSelect" class="review-selector" onchange="setReviewShot(this.value)"></select>
+                <div id="reviewCaption" class="review-caption"></div>
+                <div class="review-images">
+                    <img id="resultBeforePhoto" alt="수리 전 근접 사진">
+                    <img id="resultAfterPhoto" alt="수리 후 근접 사진" style="opacity:.5">
+                </div>
+                <label class="review-blend">수리 전
+                    <input type="range" id="resultBlend" min="0" max="100" value="50" aria-label="수리 후 사진 투명도" oninput="document.getElementById('resultAfterPhoto').style.opacity = this.value / 100">
+                    수리 후
+                </label>
+                <p class="compact-info">고스트 겹침은 재안착 위치를 확인하는 보조 기능입니다. 수리 전 상태가 반드시 정상인 것은 아니므로, 겹친다고 수평 정상으로 판단하면 안 됩니다. 사진 구도 차이가 실제 단차처럼 보일 수 있습니다.</p>
+            </div>
+            <div id="completedShotChips" class="shot-grid"></div>
+        </section>
+        <section id="alignmentPane" role="tabpanel" aria-labelledby="alignmentTab" hidden>
+            <div class="review-compare">
+                <p class="analysis-intro">수리 후 사진을 기준으로 <strong>가구장 간격·인접 도어 높낮이·개별 도어 좌우 기울기</strong>를 확인하세요. 아래 상태는 작업자가 직접 선택하며 자동 합격 판정이 아닙니다.</p>
+                <label class="fridge-count-title" for="alignmentSelect">확인할 항목</label>
+                <select id="alignmentSelect" class="review-selector" onchange="setAlignmentItem(this.value)"></select>
+                <div id="alignmentQuestion" class="review-caption"></div>
+                <p id="alignmentInstruction" class="compact-info"></p>
+                <div id="alignmentPhotos" class="alignment-photos"></div>
+                <p id="alignmentImageNote" class="note-attention"></p>
+                <label class="fridge-count-title" for="alignmentStatus">현장 확인 결과</label>
+                <select id="alignmentStatus" class="review-selector" onchange="saveAlignmentStatus(this.value)">
+                    <option value="unreviewed">미확인</option>
+                    <option value="good">정렬 양호 (작업자 확인)</option>
+                    <option value="adjust">조정 필요 (작업자 확인)</option>
+                    <option value="unclear">사진만으로 판별 어려움</option>
+                </select>
+                <p id="alignmentProgress" class="review-progress" aria-live="polite"></p>
+                <div class="alignment-nav">
+                    <button type="button" class="sub-action-btn" onclick="moveAlignment(-1)">← 이전 항목</button>
+                    <button type="button" class="sub-action-btn" onclick="moveAlignment(1)">다음 항목 →</button>
+                </div>
+            </div>
+            <p class="note-attention">중력 기준의 절대 수평은 점검 대상이 아닙니다. 정확한 mm 값·자동 정상/불량 판정은 아직 제공하지 않습니다. 개별 도어 전체 좌우 기울기는 근접 이음부 사진만으로 확인하기 어려울 수 있어 현장 확인이 필요합니다.</p>
+        </section>
+        <div class="btn-group">
+            <button class="main-action-btn" onclick="revisitAfterCapture()">선택한 부위 수리 후 다시 촬영</button>
+            <button class="sub-action-btn" onclick="openManualDirect()">수평·단차 조정 매뉴얼 보기</button>
+            <button class="sub-action-btn" onclick="returnHome()">처음으로</button>
+            <button class="sub-action-btn" onclick="openExitScreen()">작업 종료</button>
         </div>
     </div>
 
@@ -434,12 +530,25 @@
 <canvas id="calcCanvas" style="display:none;"></canvas>
 
 <script>
+    let fridgeCount = null;
+    let referenceDoor = null;
+    let shotPlan = [];
+    let shotIndex = 0;
+    let activePhase = 1;
+    const beforePhotos = new Map();
+    const afterPhotos = new Map();
+    let currentReviewKey = null;
+    let revisitingShot = false;
+    let resultMode = 'restore';
+    let alignmentItems = [];
+    const alignmentStatuses = new Map();
+    let currentAlignmentKey = null;
     let activeCameraStream = null;
     let cameraRequest = 0;
     let previousScreen = 'ready-screen';
     let screenBeforeExit = 'ready-screen';
     // Interactive Guide Data Dictionary
-    let currentSelectedPart = null;
+    let currentSelectedPart = 'leg_right';
     let currentSelectedState = 'low';
 
     const guideData = {
@@ -527,12 +636,6 @@
             pin.classList.toggle('active', selected);
             pin.setAttribute('aria-pressed', String(selected));
         });
-        byId('guideStates').hidden = !partKey;
-        byId('guideActionCard').hidden = !partKey;
-        if (!partKey) {
-            byId('guideVisualArea').replaceChildren();
-            return;
-        }
         const isDepth = partKey.startsWith('depth_');
         const target = partKey.startsWith('leg_') ? '다리 쪽이' : '도어가';
         document.getElementById('btnStateLow').textContent = isDepth ? '도어가 안으로 들어감' : target + ' 낮음 ▼';
@@ -587,24 +690,16 @@
         history.pushState({ screen: screenId }, '');
     }
 
-    function openManualDirect(part = null, showRetry = false) {
+    function openManualDirect(part = 'leg_right', showRetry = false) {
         const activeEl = document.querySelector('.screen.active');
-        if (activeEl && activeEl.id !== 'guide-screen') previousScreen = activeEl.id;
+        if (activeEl) previousScreen = activeEl.id;
         
         document.getElementById('failReasonText').style.display = 'none';
         document.getElementById('guideHeaderSub').innerText = '수평/단차 터치 가이드';
         document.getElementById('guideRetryBtn').style.display = showRetry ? 'block' : 'none';
         
-        document.querySelectorAll('.hotspot-pin').forEach(pin => { pin.disabled = showRetry; });
-        byId('manualPickHint').hidden = showRetry;
-        byId('guideShotList').hidden = true;
-        byId('guideShotList').replaceChildren();
         selectSpot(part);
-        if (activeEl?.id !== 'guide-screen') {
-            showScreen('guide-screen');
-            byId('guide-screen').scrollTop = 0;
-            byId('guideShotList').closest('.guide-container').scrollTop = 0;
-        }
+        showScreen('guide-screen');
     }
 
     function closeManualDirect() {
@@ -628,147 +723,173 @@
             cancelExit();
             return;
         }
-        if (document.getElementById('capture-screen').classList.contains('active')) leaveCapture();
-        else openExitScreen();
+        openExitScreen();
     });
 
-    const byId = id => document.getElementById(id);
-    const beforeShots = [];
-    const afterShots = [];
-    let shotPlan = [];
-    let shotIndex = 0;
-    let phase = 'before';
-    let retrying = false;
-    let guideShotIndex = null;
-    let shooting = false;
-    let openingCamera = false;
-    let lastCapturedAfter = null;
+    // Device Tilt Listener
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', function(e) {
+            if (!Number.isFinite(e.gamma)) return;
+            const currentTiltAngle = Math.round(e.gamma * 10) / 10;
+            const isLevel = Math.abs(currentTiltAngle) <= 1.0;
 
-    function makeShotPlan(count) {
-        const anchor = Math.floor((count + 1) / 2);
-        const plan = [{
-            kind: 'gap',
-            title: anchor + '번 도어와 상부 가구장 사이',
-            instruction: '도어 윗선과 가구장 아랫선을 가로선 부근에 두고, 간격의 양 끝이 보이게 찍으세요.'
-        }];
-        for (const [kind, label] of [['top', '상단'], ['bottom', '하단']]) {
-            for (let left = 1; left < count; left++) {
-                plan.push({
-                    kind, left, label,
-                    title: `${left}번–${left + 1}번 도어 ${label} 이음부`,
-                    instruction: `두 도어 사이 틈을 세로선에, 두 도어의 ${label} 모서리를 가로선에 맞춰 가까이 찍으세요.`
-                });
+            const dot1 = document.getElementById('levelDot1');
+            const text1 = document.getElementById('levelText1');
+            if (dot1 && text1) {
+                dot1.className = isLevel ? 'level-dot' : 'level-dot tilt';
+                text1.innerText = `휴대폰 기울기: ${currentTiltAngle > 0 ? '+' : ''}${currentTiltAngle}° ${isLevel ? '(촬영 자세 양호)' : '(기울어짐)'}`;
             }
-        }
-        return plan;
+
+        });
     }
 
-    document.querySelectorAll('[name="units"]').forEach(input => {
-        input.addEventListener('change', () => {
-            const count = Number(input.value);
-            shotPlan = makeShotPlan(count);
-            byId('shotPlan').textContent = `기준 도어 ${Math.floor((count + 1) / 2)}번 · 수리 전 ${shotPlan.length}장 / 수리 후 ${shotPlan.length}장`;
-            byId('startBefore').disabled = false;
+    function chooseCount(count) {
+        if (!Number.isInteger(count) || count < 2 || count > 6) return;
+        stopCamera();
+        fridgeCount = count;
+        referenceDoor = Math.floor((count - 1) / 2) + 1; // 짝수 2→1, 4→2, 6→3 (가운데 왼쪽)
+        shotPlan = buildShotPlan(count, referenceDoor);
+        shotIndex = 0;
+        beforePhotos.clear();
+        afterPhotos.clear();
+        currentReviewKey = null;
+        currentAlignmentKey = null;
+        alignmentItems = buildAlignmentItems(count, referenceDoor);
+        alignmentStatuses.clear();
+        revisitingShot = false;
+        document.querySelectorAll('.fridge-count-btn').forEach(button => {
+            const selected = Number(button.dataset.count) === count;
+            button.classList.toggle('active', selected);
+            button.setAttribute('aria-pressed', String(selected));
         });
-    });
+        document.getElementById('beginBeforeBtn').disabled = false;
+        document.getElementById('planSummary').textContent =
+            `${count}대 선택 · 왼쪽부터 ${referenceDoor}번이 기준 도어` +
+            (count % 2 === 0 ? ' (가운데 두 대 중 왼쪽)' : ' (가운데)') +
+            ` · 수리 전 ${shotPlan.length}장 / 수리 후 ${shotPlan.length}장 (총 ${shotPlan.length*2}장)`;
+    }
+
+    function buildShotPlan(count, reference) {
+        const shots = [{
+            key: `top-${reference}`, group: '기준 간격',
+            title: `${reference}번 기준 도어 ↔ 상부 가구장`,
+            desc: `${reference}번 도어의 윗모서리와 그 바로 위 가구장 하단이 함께 선명하게 보이도록 가까이 촬영하세요.`
+        }];
+        for (let edge = 1; edge < count; edge++) {
+            shots.push({key: `upper-${edge}-${edge+1}`, group: '이음부 상단',
+                title: `${edge}–${edge+1}번 도어 이음부 · 상단`,
+                desc: `${edge}번과 ${edge+1}번 도어가 만나는 세로 이음부의 상단을 가운데 두고, 좌우 도어 윗선을 함께 가까이 촬영하세요.`});
+        }
+        for (let edge = 1; edge < count; edge++) {
+            shots.push({key: `lower-${edge}-${edge+1}`, group: '이음부 하단',
+                title: `${edge}–${edge+1}번 도어 이음부 · 하단`,
+                desc: `${edge}번과 ${edge+1}번 도어가 만나는 세로 이음부의 하단을 가운데 두고, 좌우 도어 아랫선을 함께 가까이 촬영하세요.`});
+        }
+        return shots;
+    }
+
+    function beginBeforeCapture() {
+        if (!shotPlan.length) return;
+        beforePhotos.clear();
+        afterPhotos.clear();
+        revisitingShot = false;
+        shotIndex = 0;
+        startCamera(1);
+    }
+
+    function shotForCurrentIndex() { return shotPlan[shotIndex]; }
+
+    function updateCameraShotUI(step) {
+        const shot = shotForCurrentIndex();
+        if (!shot) return;
+        const before = step === 1;
+        const prefix = before ? 'before' : 'after';
+        document.getElementById(prefix + 'StepCount').textContent =
+            `${before ? '수리 전' : '수리 후'} · ${shotIndex+1}/${shotPlan.length} · ${shot.group}`;
+        document.getElementById(prefix + 'StepTitle').textContent = shot.title;
+        document.getElementById(prefix + 'StepDesc').textContent = before ? shot.desc :
+            '수리 전 사진은 구도 참고용입니다. 가로 경계선과 세로 이음부가 선명하면 안정 후 자동 촬영합니다. ' + shot.desc;
+        document.getElementById(prefix + 'Previous').disabled = shotIndex === 0;
+        if (!before) {
+            const ref = beforePhotos.get(shot.key);
+            if (!ref) return false;
+            document.getElementById('ghostImg').src = ref.src;
+            changeGhostOpacity(document.getElementById('ghostOpacity').value);
+        }
+        return true;
+    }
 
     function stopCamera() {
         cameraRequest++;
-        shooting = false;
-        openingCamera = false;
         if (activeCameraStream) activeCameraStream.getTracks().forEach(track => track.stop());
         activeCameraStream = null;
-        byId('closeVideo').srcObject = null;
     }
 
     function returnHome() {
         stopCamera();
         levelRequest++;
         clearTimeout(levelSignalTimer);
-        beforeShots.length = 0;
-        afterShots.length = 0;
-        lastCapturedAfter = null;
+        fridgeCount = null;
+        referenceDoor = null;
         shotPlan = [];
-        document.querySelectorAll('[name="units"]').forEach(input => { input.checked = false; });
-        byId('shotPlan').textContent = '대수를 선택하면 촬영 위치와 장수가 표시됩니다.';
-        byId('startBefore').disabled = true;
-        byId('autoShot').checked = true;
-        byId('ghostImg').removeAttribute('src');
-        byId('resultRows').replaceChildren();
-        previousScreen = screenBeforeExit = 'ready-screen';
+        shotIndex = 0;
+        beforePhotos.clear();
+        afterPhotos.clear();
+        currentReviewKey = null;
+        currentAlignmentKey = null;
+        alignmentItems = [];
+        alignmentStatuses.clear();
+        revisitingShot = false;
+        resultMode = 'restore';
+        document.querySelectorAll('.fridge-count-btn').forEach(button => {
+            button.classList.remove('active');
+            button.setAttribute('aria-pressed', 'false');
+        });
+        document.getElementById('beginBeforeBtn').disabled = true;
+        document.getElementById('planSummary').textContent = '대수를 선택하면 기준 도어와 촬영 순서가 표시됩니다.';
+        for (const id of ['videoFeed', 'videoFeed2']) document.getElementById(id).srcObject = null;
+        for (const id of ['ghostImg', 'resultBeforePhoto', 'resultAfterPhoto']) document.getElementById(id).removeAttribute('src');
+        previousScreen = 'ready-screen';
+        screenBeforeExit = 'ready-screen';
         showScreen('ready-screen');
     }
 
-    function startBefore() {
-        if (!shotPlan.length) return;
-        beforeShots.length = afterShots.length = 0;
-        phase = 'before';
-        shotIndex = 0;
-        retrying = false;
-        lastCapturedAfter = null;
-        openCapture();
-    }
-
-    function startAfter() {
-        phase = 'after';
-        shotIndex = afterShots.length;
-        retrying = false;
-        lastCapturedAfter = null;
-        openCapture();
-    }
-
-    function leaveCapture() {
+    function leaveCamera(step) {
         stopCamera();
-        if (retrying) showScreen('results-screen');
-        else if (shotIndex > 0 && phase === 'before') {
-            beforeShots.length = --shotIndex;
-            openCapture();
-        } else showScreen(phase === 'before' ? 'ready-screen' : 'notice-screen');
+        if (step === 2) revisitingShot = false;
+        if (step === 1) showScreen('ready-screen');
+        else if (afterPhotos.size === shotPlan.length) showResults();
+        else showScreen('notice-screen');
     }
 
-    function retryShot(index) {
-        if (!afterShots[index]) return;
-        phase = 'after';
-        shotIndex = index;
-        retrying = true;
-        lastCapturedAfter = null;
-        openCapture();
+    function previousShot(step) {
+        if (shotIndex < 1) return;
+        shotIndex--;
+        startCamera(step);
     }
 
-    function openCapture() {
-        const shot = shotPlan[shotIndex];
-        if (!shot) return;
-        if (!byId('capture-screen').classList.contains('active')) showScreen('capture-screen');
-        byId('shotProgress').textContent = `수리 ${phase === 'before' ? '전' : '후'} · ${shotIndex + 1}/${shotPlan.length}`;
-        byId('shotTitle').textContent = shot.title;
-        byId('shotInstruction').textContent = shot.instruction;
-        byId('joinGuide').hidden = shot.kind === 'gap';
-        byId('afterControls').classList.toggle('before-controls', phase === 'before');
-        byId('afterControls').inert = phase === 'before';
-        const ghost = byId('ghostImg');
-        ghost.hidden = phase === 'before';
-        if (phase === 'after') ghost.src = beforeShots[shotIndex].photo.src;
-        if (activeCameraStream) {
-            armCapture();
-            return;
+    const cameraScreens = {1: ['camera1-screen', 'videoFeed'], 2: ['camera2-screen', 'videoFeed2']};
+
+    async function startCamera(step) {
+        if (!shotPlan.length || !cameraScreens[step]) return;
+        if (step === 2 && beforePhotos.size !== shotPlan.length) return;
+        stopCamera();
+        activePhase = step;
+        const request = cameraRequest;
+        const [screenId, videoId] = cameraScreens[step];
+        const video = document.getElementById(videoId);
+        const shutter = document.querySelector('#' + screenId + ' .shutter-btn');
+        if (!updateCameraShotUI(step)) return;
+        shutter.disabled = true;
+        if (step === 2) {
+            document.getElementById('afterCameraHint').textContent = '기준선 찾는 중';
+            document.getElementById('autoHoldProgress').style.width = '0';
         }
-        connectCamera();
-    }
-
-    async function connectCamera() {
-        if (openingCamera) return;
-        openingCamera = true;
-        const request = ++cameraRequest;
-        const video = byId('closeVideo');
-        const button = byId('captureButton');
-        button.disabled = true;
-        button.onclick = () => takeCloseup();
-        button.setAttribute('aria-label', '사진 촬영');
-        byId('captureStatus').textContent = '카메라를 여는 중입니다.';
+        showScreen(screenId);
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
-                audio: false
+                video: {facingMode: {ideal: 'environment'}, width: {ideal: 1080},
+                    height: {ideal: 1920}, aspectRatio: {ideal: 9/16}}, audio: false
             });
             if (request !== cameraRequest) {
                 stream.getTracks().forEach(track => track.stop());
@@ -777,175 +898,367 @@
             activeCameraStream = stream;
             video.srcObject = stream;
             await video.play();
-            if (request === cameraRequest) armCapture();
-        } catch {
             if (request !== cameraRequest) return;
-            stopCamera();
-            byId('captureStatus').textContent = '카메라를 열 수 없습니다. HTTPS와 카메라 권한을 확인해 주세요.';
-            button.onclick = connectCamera;
-            button.setAttribute('aria-label', '카메라 다시 열기');
-            button.disabled = false;
-        } finally {
-            if (request === cameraRequest) openingCamera = false;
+            shutter.disabled = false;
+            if (step === 2) watchAutoShot(video, request, shotForCurrentIndex().key);
+        } catch (error) {
+            if (request !== cameraRequest) return;
+            alert('카메라를 열 수 없습니다. 브라우저 카메라 권한과 HTTPS 접속을 확인해 주세요.');
+            leaveCamera(step);
         }
     }
 
-    function armCapture() {
-        openingCamera = false;
-        const request = ++cameraRequest;
-        byId('captureButton').disabled = false;
-        byId('captureStatus').textContent = '휴대폰을 세워 도어 정면에서 촬영하세요.';
-        if (phase === 'after') watchCloseup(byId('closeVideo'), beforeShots[shotIndex].photo, request);
+    // 수리 전후 완전 픽셀 일치 대신, 기준선 위치·선명도·프레임 안정성을 사용합니다.
+    // 화면에 보이는 조건은 촬영 보조일 뿐 실제 도어 수평 판정이나 mm 측정이 아닙니다.
+    function strongPeak(values, lo, hi) {
+        const region = [];
+        for (let i = lo; i < hi; i++) region.push(values[i]);
+        if (!region.length) return null;
+        const sorted = region.slice().sort((a, b) => a - b);
+        const median = sorted[Math.floor(sorted.length / 2)] || 0;
+        let best = -Infinity, index = -1;
+        for (let i = lo; i < hi; i++) {
+            const score = values[i] + (values[i - 1] || 0) * .3 + (values[i + 1] || 0) * .3;
+            if (score > best) { best = score; index = i; }
+        }
+        const strength = values[index] || 0;
+        if (strength < Math.max(4.8, median * 1.8)) return null;
+        return {pos: index, strength};
     }
 
-    function cropVideo(video, targetWidth, targetHeight) {
-        const ratio = targetWidth / targetHeight;
-        const width = Math.min(video.videoWidth, video.videoHeight * ratio);
-        const height = Math.min(video.videoHeight, width / ratio);
-        return [(video.videoWidth - width) / 2, (video.videoHeight - height) / 2, width, height];
-    }
-
-    function closeupMatcher(reference, video) {
-        const ratio = reference.naturalWidth / reference.naturalHeight;
-        const width = Math.round(180 * Math.min(1, ratio));
-        const height = Math.round(180 * Math.min(1, 1 / ratio));
-        const readPixels = makePixelReader(width, height);
-        const baseline = readPixels(reference);
-        return () => {
-            const visibleRatio = video.clientWidth / video.clientHeight;
-            if (Math.abs(visibleRatio / ratio - 1) > .05) return false;
-            const pixels = readPixels(video, cropVideo(video, video.clientWidth, video.clientHeight));
-            const transform = fitRegion(matchRegions(baseline, pixels, width, height), width, height);
-            return canAutoCapture(transform, width, height);
+    function detectGuideEdges(pixels, w, h, shot) {
+        const horizontals = new Float32Array(h);
+        const verticals = new Float32Array(w);
+        const x1 = Math.round(w * .21), x2 = Math.round(w * .79);
+        const y1 = Math.round(h * .25), y2 = Math.round(h * .76);
+        for (let y = 2; y < h - 2; y++) {
+            let sum = 0, count = 0;
+            for (let x = x1; x < x2; x += 2) {
+                sum += Math.abs(pixels[(y+2)*w+x] - pixels[(y-2)*w+x]); count++;
+            }
+            horizontals[y] = sum / Math.max(1, count);
+        }
+        for (let x = 2; x < w - 2; x++) {
+            let sum = 0, count = 0;
+            for (let y = y1; y < y2; y += 2) {
+                sum += Math.abs(pixels[y*w+x+2] - pixels[y*w+x-2]); count++;
+            }
+            verticals[x] = sum / Math.max(1, count);
+        }
+        return {
+            horizontal: strongPeak(horizontals, Math.round(h * .24), Math.round(h * .77)),
+            vertical: strongPeak(verticals, Math.round(w * .27), Math.round(w * .73))
         };
     }
 
-    function watchCloseup(video, reference, request) {
-        const isAligned = closeupMatcher(reference, video);
-        const isPreviousView = lastCapturedAfter && closeupMatcher(lastCapturedAfter, video);
-        let targetChanged = !isPreviousView;
-        const toggle = byId('autoShot');
-        const hint = byId('captureStatus');
-        let matchingSince = null;
-        let lastSampleAt = null;
-        let lastVideoTime = -1;
+    function frameMotion(previous, current) {
+        if (!previous || previous.length !== current.length) return Infinity;
+        // 노출 변화 영향을 줄이기 위해 전체 밝기 변화의 평균을 빼고 차이값을 비교합니다.
+        let avg = 0, count = 0;
+        for (let i = 0; i < current.length; i += 5) { avg += current[i] - previous[i]; count++; }
+        avg /= Math.max(1, count);
+        let diff = 0;
+        for (let i = 0; i < current.length; i += 5) diff += Math.abs(current[i] - previous[i] - avg);
+        return diff / Math.max(1, count);
+    }
+
+    function guideFrameCheck(ref, current, shot, w, h) {
+        // 가구장 ↔ 도어: 고정 가구장 하단/도어 상단 가로선이 잘 보이는가?
+        // 이음부: 세로 이음부와 도어의 상/하단 가로선이 같이 보이는가?
+        if (!ref.horizontal || !current.horizontal) return {ok: false, hint: '도어 가로 경계선이 잘 보이도록 가까이 이동해 주세요'};
+        const horzDelta = Math.abs(ref.horizontal.pos - current.horizontal.pos);
+        if (horzDelta > h * .16) return {ok: false, hint: '고스트의 가로선 위치·촬영 거리를 비슷하게 맞춰 주세요'};
+        if (shot.group === '기준 간격') return {ok: true, hint: '상부 가구장·도어 경계 확인'};
+        if (!ref.vertical || !current.vertical) return {ok: false, hint: '도어 사이 세로 이음부가 보이도록 맞춰 주세요'};
+        if (Math.abs(ref.vertical.pos - current.vertical.pos) > w * .14)
+            return {ok: false, hint: '세로 이음부를 고스트 위치에 맞춰 주세요'};
+        return {ok: true, hint: '도어 가로선·세로 이음부 확인'};
+    }
+
+    function watchAutoShot(video, request, shotKey) {
+        const shot = shotForCurrentIndex();
+        const referencePhoto = beforePhotos.get(shotKey);
+        if (!referencePhoto || !shot) return;
+        const ratio = referencePhoto.naturalWidth / referencePhoto.naturalHeight;
+        const width = Math.max(64, Math.round(170 * Math.min(1, ratio)));
+        const height = Math.max(64, Math.round(width / ratio));
+        const readPixels = makePixelReader(width, height);
+        const refEdges = detectGuideEdges(readPixels(referencePhoto), width, height, shot);
+        const toggle = document.getElementById('autoShot');
+        const hint = document.getElementById('afterCameraHint');
+        const hold = document.getElementById('autoHoldProgress');
+        let previous = null, previousEdges = null, stableSince = null;
+        const holdMs = 850;
+        let lastTime = 0;
+
         function checkFrame() {
-            if (request !== cameraRequest || shooting) return;
+            if (request !== cameraRequest || shotForCurrentIndex()?.key !== shotKey) return;
             const now = performance.now();
-            if (lastSampleAt !== null && now - lastSampleAt > 700) matchingSince = null;
-            lastSampleAt = now;
-            const ready = toggle.checked && !document.hidden && video.readyState >= 2 &&
-                video.videoWidth && video.currentTime !== lastVideoTime;
-            lastVideoTime = video.currentTime;
-            if (ready && !targetChanged) targetChanged = !isPreviousView();
-            if (ready && targetChanged && isAligned()) {
-                matchingSince ??= now;
-                hint.textContent = '그대로 유지하세요';
-                if (now - matchingSince >= 1200) {
-                    takeCloseup(true);
-                    return;
+            const ready = toggle.checked && !document.hidden && video.readyState >= 2 && video.videoWidth;
+            if (!ready) {
+                stableSince = null; previous = null; previousEdges = null;
+                hold.style.width = '0';
+                hint.textContent = toggle.checked ? '카메라 화면을 준비하고 있어요' : '자동 촬영 꺼짐 · 아래 셔터로 촬영';
+            } else if (now - lastTime >= 200) {
+                lastTime = now;
+                try {
+                    const pixels = readPixels(video);
+                    const edges = detectGuideEdges(pixels, width, height, shot);
+                    const checked = guideFrameCheck(refEdges, edges, shot, width, height);
+                    const motion = frameMotion(previous, pixels);
+                    const edgeStill = !previousEdges ||
+                        (Math.abs((edges.horizontal?.pos ?? 0) - (previousEdges.horizontal?.pos ?? 0)) <= 3 &&
+                         Math.abs((edges.vertical?.pos ?? 0) - (previousEdges.vertical?.pos ?? 0)) <= 3);
+                    const steady = motion < 9 && edgeStill;
+                    previous = pixels;
+                    previousEdges = edges;
+                    if (checked.ok && steady) {
+                        stableSince ??= now;
+                        const elapsed = now - stableSince;
+                        hold.style.width = Math.min(100, elapsed / holdMs * 100) + '%';
+                        hint.textContent = elapsed < holdMs ? '기준선 확인 · 그대로 유지해 주세요' : '자동 촬영';
+                        if (elapsed >= holdMs) { takeAfterPhoto(true); return; }
+                    } else {
+                        stableSince = null;
+                        hold.style.width = '0';
+                        hint.textContent = checked.ok ? '기준선 확인 · 휴대폰을 잠시 멈춰 주세요' : checked.hint;
+                    }
+                } catch (error) {
+                    stableSince = null;
+                    hold.style.width = '0';
+                    hint.textContent = '인식 어려움 · 고스트를 참고해 수동 촬영 가능';
+                    console.warn('자동 촬영 기준선 확인 실패', error);
                 }
-            } else {
-                matchingSince = null;
-                hint.textContent = toggle.checked ? '구도 맞추는 중' : '구도를 맞춘 뒤 셔터를 눌러주세요.';
             }
-            setTimeout(checkFrame, 300);
+            setTimeout(checkFrame, 180);
         }
         checkFrame();
     }
 
-    function closeupFrame(video) {
-        const canvas = byId('calcCanvas');
-        const crop = cropVideo(video, video.clientWidth, video.clientHeight);
-        const scale = Math.min(1, 1280 / Math.max(crop[2], crop[3]));
-        canvas.width = Math.round(crop[2] * scale);
-        canvas.height = Math.round(crop[3] * scale);
-        canvas.getContext('2d').drawImage(video, ...crop, 0, 0, canvas.width, canvas.height);
+    function captureFrame(video) {
+        if (!activeCameraStream || video.readyState < 2 || !video.videoWidth) return null;
+        const canvas = document.getElementById('calcCanvas');
+        const visibleRatio = video.clientWidth / video.clientHeight;
+        if (!Number.isFinite(visibleRatio) || visibleRatio <= 0) return null;
+        const width = Math.min(video.videoWidth, video.videoHeight * visibleRatio);
+        const height = Math.min(video.videoHeight, width / visibleRatio);
+        const scale = Math.min(1, 1920 / Math.max(width, height));
+        canvas.width = Math.max(1, Math.round(width * scale));
+        canvas.height = Math.max(1, Math.round(height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, (video.videoWidth - width) / 2, (video.videoHeight - height) / 2,
+            width, height, 0, 0, canvas.width, canvas.height);
         const photo = new Image();
-        photo.src = canvas.toDataURL('image/jpeg', .9);
+        photo.src = canvas.toDataURL('image/jpeg', .94);
         return photo;
     }
 
-    async function takeCloseup(autoCaptured = false) {
-        const video = byId('closeVideo');
-        if (shooting || !activeCameraStream || video.readyState < 2 || !video.videoWidth) return;
-        const request = ++cameraRequest;
-        const shot = shotPlan[shotIndex];
-        shooting = true;
-        byId('captureButton').disabled = true;
-        byId('captureStatus').textContent = autoCaptured ? '자동 촬영' : '촬영 중';
-        const frames = [];
-        try {
-            const comparable = phase === 'after' && shot.kind === 'gap' &&
-                (autoCaptured || closeupMatcher(beforeShots[shotIndex].photo, video)());
-            let lastTime = -1;
-            for (let attempt = 0; attempt < 6 && frames.length < 3; attempt++) {
-                if (attempt) await new Promise(resolve => setTimeout(resolve, 85));
-                if (request !== cameraRequest) return;
-                if (lastTime === video.currentTime) continue;
-                lastTime = video.currentTime;
-                const photo = closeupFrame(video);
-                await photo.decode();
-                if (request !== cameraRequest) return;
-                const width = photo.naturalWidth, height = photo.naturalHeight;
-                const pixels = makePixelReader(width, height)(photo);
-                frames.push({ photo, measurement: shot.kind === 'gap'
-                    ? measureCabinetGap(pixels, width, height)
-                    : judgeDoorEdges(pixels, width, height, shot.kind === 'top') });
+    async function takePhoto(step, autoCaptured = false) {
+        if (step !== activePhase || !shotForCurrentIndex()) return;
+        const key = shotForCurrentIndex().key;
+        const video = document.getElementById(cameraScreens[step][1]);
+        const photo = captureFrame(video);
+        if (!photo) return;
+        stopCamera();
+        const request = cameraRequest;
+        try { await photo.decode(); }
+        catch {
+            if (request === cameraRequest) {
+                alert('촬영 사진을 불러오지 못했습니다. 다시 촬영해 주세요.');
+                startCamera(step);
             }
-            if (!frames.length) throw new Error('No frame');
-            const record = summarizeFrames(shot, frames, comparable);
-            if (phase === 'before') {
-                const reason = baselineRetakeReason(shot, record);
-                if (reason) {
-                    shooting = false;
-                    byId('captureStatus').textContent = reason + ' 이 부위를 다시 찍어주세요.';
-                    byId('captureButton').disabled = false;
-                    return;
-                }
-            }
-            (phase === 'before' ? beforeShots : afterShots)[shotIndex] = record;
-            if (phase === 'after') lastCapturedAfter = record.photo;
-            if (retrying) {
-                finishAfter([shotIndex]);
-            } else if (++shotIndex === shotPlan.length) {
-                if (phase === 'before') {
-                    stopCamera();
-                    showScreen('notice-screen');
-                } else finishAfter(shotPlan.map((_, index) => index));
-            } else {
-                if (autoCaptured) {
-                    await new Promise(resolve => setTimeout(resolve, 250));
-                    if (request !== cameraRequest) return;
-                }
-                shooting = false;
-                openCapture();
-            }
-        } catch {
-            if (request !== cameraRequest) return;
-            shooting = false;
-            byId('captureStatus').textContent = '사진을 저장하지 못했습니다. 셔터를 다시 눌러주세요.';
-            byId('captureButton').disabled = false;
+            return;
         }
-    }
-    function canAutoCapture(background, width, height) {
-        if (!background || background.residual > .9) return false;
-        const {a, b, tx, ty} = background;
-        const dx = (a - 1) * width / 2 - b * height / 2 + tx;
-        const dy = b * width / 2 + (a - 1) * height / 2 + ty;
-        return Math.abs(dx) <= width * .025 && Math.abs(dy) <= height * .025 &&
-            Math.abs(Math.hypot(a, b) - 1) <= .027 && Math.abs(Math.atan2(b, a)) <= .025;
+        if (request !== cameraRequest) return;
+        (step === 1 ? beforePhotos : afterPhotos).set(key, photo);
+        if (step === 2) {
+            // 새 사진을 찍었다면 기존 사진에 대해 내려진 수동 확인 판단은 유지할 수 없습니다.
+            for (const item of alignmentItems) {
+                if (item.photoKeys.includes(key)) alignmentStatuses.delete(item.key);
+            }
+        }
+        if (step === 2 && revisitingShot) {
+            revisitingShot = false;
+            showResults();
+            return;
+        }
+        shotIndex++;
+        if (shotIndex < shotPlan.length) { startCamera(step); return; }
+        shotIndex = 0;
+        if (step === 1) {
+            document.getElementById('beforeCompletedMessage').textContent =
+                `${fridgeCount}대 · 수리 전 ${beforePhotos.size}개 부위 사진 등록 완료. ` +
+                '수리 및 재안착 후 수리 전 각 사진을 고스트 오버레이로 띄워 같은 순서로 촬영하세요.';
+            showScreen('notice-screen');
+        } else showResults();
     }
 
-    function combineDoorFrames(verdicts) {
-        const count = value => verdicts.filter(verdict => verdict === value).length;
-        const pass = count('pass') + count('borderline');
-        const left = count('left'), right = count('right');
-        if (pass >= 2 && !left && !right) return 'pass';
-        if (left >= 2 && !right && !pass) return 'left';
-        if (right >= 2 && !left && !pass) return 'right';
-        if (pass || left || right) return 'review';
-        return verdicts.find(verdict => count(verdict) >= 2) || verdicts[0] || 'retake';
+    function takeBeforePhoto() { return takePhoto(1); }
+    function takeAfterPhoto(autoCaptured = false) { return takePhoto(2, autoCaptured); }
+
+    function changeGhostOpacity(val) {
+        document.getElementById('ghostImg').style.opacity = val / 100;
+    }
+
+    function buildAlignmentItems(count, reference) {
+        const items = [
+            { key: `top-${reference}`, title: '기준 도어 ↔ 상부 가구장 간격',
+              group: '상부 간격', photoKeys: [`top-${reference}`],
+              question: `${reference}번 기준 도어의 좌우에서 가구장 하단과 도어 상단 간격이 균일한가요?`,
+              note: '가구장과 도어의 두 경계가 함께 보이는지 확인하세요. 도어가 가구장과 평행한지 눈으로 점검합니다.' }
+        ];
+        for (let i=1; i<count; i++) {
+            items.push({key: `upper-${i}-${i+1}`, group: '인접 도어 상단',
+                title: `${i}–${i+1}번 도어 상단 높이`, photoKeys: [`upper-${i}-${i+1}`],
+                question: `${i}번과 ${i+1}번 도어의 상단 높이가 맞나요?`,
+                note: '수리 후 사진에서 두 도어 윗선의 상대적인 높이를 직접 확인하세요.'});
+        }
+        for (let i=1; i<count; i++) {
+            items.push({key: `lower-${i}-${i+1}`, group: '인접 도어 하단',
+                title: `${i}–${i+1}번 도어 하단 높이`, photoKeys: [`lower-${i}-${i+1}`],
+                question: `${i}번과 ${i+1}번 도어의 하단 높이가 맞나요?`,
+                note: '수리 후 사진에서 두 도어 아랫선의 상대적인 높이를 직접 확인하세요.'});
+        }
+        for (let i=1; i<=count; i++) {
+            const keys = [];
+            if (i>1) keys.push(`upper-${i-1}-${i}`);
+            if (i<count) keys.push(`upper-${i}-${i+1}`);
+            if (i===reference) keys.unshift(`top-${reference}`);
+            items.push({key: `slope-${i}`, group: '개별 도어 좌우 기울기',
+                title: `${i}번 도어 좌우 기울어짐`, photoKeys: [...new Set(keys)],
+                question: `${i}번 도어 자체의 왼쪽·오른쪽 높이가 일정한가요?`,
+                note: '참고 사진은 각기 다른 근접 구도입니다. 이 사진만으로 좌우 끝의 실제 높이 차이를 신뢰성 있게 판단할 수 없습니다. 도어 전체를 현장에서 보고 확인하거나 “사진만으로 판별 어려움”을 선택하세요.'});
+        }
+        return items;
+    }
+
+    function switchResultMode(mode) {
+        resultMode = mode === 'alignment' ? 'alignment' : 'restore';
+        for (const [name, paneId] of [['restore', 'restorePane'], ['alignment', 'alignmentPane']]) {
+            const visible = name === resultMode;
+            document.getElementById(paneId).hidden = !visible;
+            const tab = document.getElementById(name === 'restore' ? 'restoreTab' : 'alignmentTab');
+            tab.classList.toggle('active', visible);
+            tab.setAttribute('aria-selected', String(visible));
+        }
+    }
+
+    function renderAlignmentSelect() {
+        const select = document.getElementById('alignmentSelect');
+        select.replaceChildren();
+        for (const item of alignmentItems) {
+            const option = document.createElement('option');
+            option.value = item.key;
+            option.textContent = `${item.group} · ${item.title}`;
+            select.appendChild(option);
+        }
+        const current = alignmentItems.find(item => item.key === currentAlignmentKey)?.key || alignmentItems[0]?.key;
+        if (current) setAlignmentItem(current);
+    }
+
+    function setAlignmentItem(key) {
+        const item = alignmentItems.find(record => record.key === key);
+        if (!item) return;
+        currentAlignmentKey = key;
+        document.getElementById('alignmentSelect').value = key;
+        document.getElementById('alignmentQuestion').textContent = item.question;
+        document.getElementById('alignmentInstruction').textContent = item.note;
+        const list = document.getElementById('alignmentPhotos');
+        list.replaceChildren();
+        for (const shotKey of item.photoKeys) {
+            const photo = afterPhotos.get(shotKey);
+            if (!photo) continue;
+            const box = document.createElement('div');
+            box.className = 'alignment-shot';
+            const image = document.createElement('img');
+            image.src = photo.src;
+            image.alt = shotPlan.find(s => s.key === shotKey)?.title || '수리 후 사진';
+            const label = document.createElement('div');
+            label.className = 'alignment-shot-label';
+            label.textContent = shotPlan.find(s => s.key === shotKey)?.title || '수리 후 사진';
+            box.append(image, label);
+            list.appendChild(box);
+        }
+        document.getElementById('alignmentImageNote').textContent =
+            item.key.startsWith('slope-') ? '이음부 근접 사진은 개별 도어 전체의 기울기를 자동 판정할 근거가 부족합니다. 현장에서 도어 좌우 높이를 별도로 점검해 주세요.'
+              : '수리 후 사진을 보여주는 화면입니다. 사진상의 수평선·단차는 카메라 각도에 따라 다르게 보일 수 있습니다.';
+        document.getElementById('alignmentStatus').value = alignmentStatuses.get(key) || 'unreviewed';
+        updateAlignmentProgress();
+        // 재촬영 버튼이 현재 항목의 첫 사진을 재촬영하도록 선택을 동기화합니다.
+        const photoKey = item.photoKeys[0];
+        if (photoKey && shotPlan.some(shot => shot.key === photoKey)) currentReviewKey = photoKey;
+    }
+
+    function saveAlignmentStatus(status) {
+        const allowed = ['unreviewed', 'good', 'adjust', 'unclear'];
+        if (!allowed.includes(status) || !currentAlignmentKey) return;
+        if (status === 'unreviewed') alignmentStatuses.delete(currentAlignmentKey);
+        else alignmentStatuses.set(currentAlignmentKey, status);
+        updateAlignmentProgress();
+    }
+
+    function updateAlignmentProgress() {
+        const reviewed = alignmentItems.filter(item => alignmentStatuses.has(item.key)).length;
+        const adjust = alignmentItems.filter(item => alignmentStatuses.get(item.key) === 'adjust').length;
+        document.getElementById('alignmentProgress').textContent =
+            `작업자 확인 ${reviewed}/${alignmentItems.length}개 항목` + (adjust ? ` · 조정 필요로 표시한 항목 ${adjust}개` : '');
+    }
+
+    function moveAlignment(direction) {
+        if (!alignmentItems.length) return;
+        const index = alignmentItems.findIndex(item => item.key === currentAlignmentKey);
+        setAlignmentItem(alignmentItems[Math.max(0, Math.min(alignmentItems.length-1, index + direction))].key);
+    }
+
+    function showResults() {
+        if (afterPhotos.size !== shotPlan.length) return;
+        document.getElementById('resultTitle').textContent = '촬영 완료 · 도어 복귀 및 정렬 확인';
+        document.getElementById('resultDetail').textContent =
+            `${fridgeCount}대 · 기준 ${referenceDoor}번 도어 · 수리 전 ${beforePhotos.size}장 / 수리 후 ${afterPhotos.size}장. ` +
+            '① 수리 전후 복귀 비교와 ② 수리 후 도어 정렬 항목을 구분해 확인하세요.';
+        const select = document.getElementById('reviewSelect');
+        select.replaceChildren();
+        for (const shot of shotPlan) {
+            const option = document.createElement('option');
+            option.value = shot.key;
+            option.textContent = `${shot.group} · ${shot.title}`;
+            select.appendChild(option);
+        }
+        const chipBox = document.getElementById('completedShotChips');
+        chipBox.replaceChildren();
+        for (const group of ['기준 간격', '이음부 상단', '이음부 하단']) {
+            const count = shotPlan.filter(shot => shot.group === group).length;
+            const chip = document.createElement('span');
+            chip.className = 'shot-chip';
+            chip.textContent = `${group} ${count}부위`;
+            chipBox.appendChild(chip);
+        }
+        const key = currentReviewKey && afterPhotos.has(currentReviewKey) ? currentReviewKey : shotPlan[0].key;
+        select.value = key;
+        setReviewShot(key);
+        renderAlignmentSelect();
+        switchResultMode(resultMode);
+        showScreen('pass-screen');
+    }
+
+    function setReviewShot(key) {
+        const shot = shotPlan.find(item => item.key === key);
+        if (!shot) return;
+        currentReviewKey = key;
+        document.getElementById('reviewSelect').value = key;
+        document.getElementById('reviewCaption').textContent = shot.title;
+        document.getElementById('resultBeforePhoto').src = beforePhotos.get(key)?.src || '';
+        document.getElementById('resultAfterPhoto').src = afterPhotos.get(key)?.src || '';
+        document.getElementById('resultBlend').value = 50;
+        document.getElementById('resultAfterPhoto').style.opacity = .5;
+    }
+
+    function revisitAfterCapture() {
+        if (!shotPlan.length || beforePhotos.size !== shotPlan.length) return;
+        const index = shotPlan.findIndex(shot => shot.key === currentReviewKey);
+        shotIndex = index < 0 ? 0 : index;
+        revisitingShot = true;
+        startCamera(2);
     }
 
     function makePixelReader(width, height) {
@@ -953,9 +1266,14 @@
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
-        return (photo, crop) => {
-            if (crop) ctx.drawImage(photo, ...crop, 0, 0, width, height);
-            else ctx.drawImage(photo, 0, 0, width, height);
+        return photo => {
+            const sourceWidth = photo.videoWidth || photo.naturalWidth;
+            const sourceHeight = photo.videoHeight || photo.naturalHeight;
+            const ratio = width / height;
+            const cropWidth = Math.min(sourceWidth, sourceHeight * ratio);
+            const cropHeight = Math.min(sourceHeight, cropWidth / ratio);
+            ctx.drawImage(photo, (sourceWidth - cropWidth)/2, (sourceHeight - cropHeight)/2,
+                cropWidth, cropHeight, 0, 0, width, height);
             const rgba = ctx.getImageData(0, 0, width, height).data;
             const pixels = new Float32Array(width * height);
             for (let i = 0; i < pixels.length; i++) {
@@ -965,421 +1283,6 @@
         };
     }
 
-    // Match distinctive features outside the measurement band for capture alignment.
-    function matchRegions(before, after, width, height) {
-        const radius = 4;
-        const searchX = Math.round(width * .11);
-        const searchY = Math.round(height * .11);
-        const margin = radius + 2;
-        const matches = [];
-
-        function patch(image, x, y) {
-            const values = [];
-            let sum = 0;
-            let square = 0;
-            for (let dy = -radius; dy <= radius; dy += 2) {
-                for (let dx = -radius; dx <= radius; dx += 2) {
-                    const value = image[(y + dy) * width + x + dx];
-                    values.push(value);
-                    sum += value;
-                    square += value * value;
-                }
-            }
-            const mean = sum / values.length;
-            const energy = Math.sqrt(Math.max(0, square - sum * mean));
-            return {values, mean, energy};
-        }
-
-        function correlation(template, x, y) {
-            let sum = 0, square = 0, dot = 0, i = 0;
-            for (let dy = -radius; dy <= radius; dy += 2) {
-                for (let dx = -radius; dx <= radius; dx += 2) {
-                    const value = after[(y + dy) * width + x + dx];
-                    sum += value;
-                    square += value * value;
-                    dot += (template.values[i++] - template.mean) * value;
-                }
-            }
-            const energy = Math.sqrt(Math.max(0, square - sum * sum / i));
-            return energy < 16 ? -1 : dot / (template.energy * energy);
-        }
-
-        const cells = new Map();
-        for (let y = margin; y < height - margin; y += 2) {
-            for (let x = margin; x < width - margin; x += 2) {
-                const u = x / width, v = y / height;
-                const background = u < .16 || u > .84 || v < .38 || v > .62;
-                if (!background) continue;
-                // Ignore straight edges that cannot locate a point in both axes.
-                let xx = 0, yy = 0, xy = 0;
-                for (let dy = -3; dy <= 3; dy += 2) {
-                    for (let dx = -3; dx <= 3; dx += 2) {
-                        const i = (y + dy) * width + x + dx;
-                        const gx = before[i + 1] - before[i - 1];
-                        const gy = before[i + width] - before[i - width];
-                        xx += gx * gx; yy += gy * gy; xy += gx * gy;
-                    }
-                }
-                const score = (xx * yy - xy * xy) / Math.max(1, xx + yy);
-                if (score < 220) continue;
-                const key = Math.floor(u * 9) + ':' + Math.floor(v * 12);
-                if (!cells.has(key) || cells.get(key).score < score) cells.set(key, {x, y, score});
-            }
-        }
-
-        for (const {x, y} of cells.values()) {
-            const template = patch(before, x, y);
-            if (template.energy < 23) continue;
-            let best = {x, y, score: correlation(template, x, y)};
-            const peaks = [best];
-            for (let candidateY = Math.max(margin, y - searchY); candidateY <= Math.min(height - margin - 1, y + searchY); candidateY++) {
-                for (let candidateX = Math.max(margin, x - searchX); candidateX <= Math.min(width - margin - 1, x + searchX); candidateX++) {
-                    const score = correlation(template, candidateX, candidateY);
-                    if (score < .815) continue;
-                    const next = {x: candidateX, y: candidateY, score};
-                    peaks.push(next);
-                    if (next.score > best.score) best = next;
-                }
-            }
-            if (best.score < .86 || peaks.some(other =>
-                Math.hypot(other.x - best.x, other.y - best.y) > 3 && other.score > best.score - .045)) continue;
-            matches.push({x, y, nextX: best.x, nextY: best.y});
-        }
-        return matches;
-    }
-
-    function fitRegion(matches, width, height) {
-        if (matches.length < 6) return null;
-        function fit(points) {
-            const mean = key => points.reduce((sum, point) => sum + point[key], 0) / points.length;
-            const x = mean('x'), y = mean('y'), nextX = mean('nextX'), nextY = mean('nextY');
-            let dot = 0, cross = 0, energy = 0;
-            for (const p of points) {
-                const dx = p.x - x, dy = p.y - y;
-                dot += dx * (p.nextX - nextX) + dy * (p.nextY - nextY);
-                cross += dx * (p.nextY - nextY) - dy * (p.nextX - nextX);
-                energy += dx * dx + dy * dy;
-            }
-            const a = dot / energy, b = cross / energy;
-            return {a, b, tx: nextX - a * x + b * y, ty: nextY - b * x - a * y};
-        }
-
-        const error = (t, p) => Math.hypot(
-            t.a * p.x - t.b * p.y + t.tx - p.nextX,
-            t.b * p.x + t.a * p.y + t.ty - p.nextY);
-        let best = [];
-        for (let i = 0; i < matches.length; i++) {
-            for (let j = i + 1; j < matches.length; j++) {
-                const a = matches[i], b = matches[j];
-                if (Math.hypot(a.x - b.x, a.y - b.y) < 18) continue;
-                const transform = fit([a, b]);
-                const inliers = matches.filter(point => error(transform, point) <= 1.45);
-                if (inliers.length > best.length) best = inliers;
-            }
-        }
-        if (best.length < Math.max(6, matches.length * .68)) return null;
-        const span = key => Math.max(...best.map(p => p[key])) - Math.min(...best.map(p => p[key]));
-        if (span('x') < width * .21 || span('y') < height * .20) return null;
-        const transform = fit(best);
-        return { ...transform, residual: Math.sqrt(best.reduce((sum, p) => sum + error(transform, p) ** 2, 0) / best.length) };
-    }
-
-    // The close-up guide places the door join at x=50% and both lower edges near y=50%.
-    function findDoorEdge(pixels, width, height, from, to) {
-        const middle = width / 2;
-        const left = Math.round(width * from), right = Math.round(width * to);
-        const segments = 5;
-        const startY = Math.round(height * .45), endY = Math.round(height * .55);
-        const edgeOffset = Math.max(2, Math.round(height * .0025));
-        const sampleStep = Math.max(1, Math.floor((right - left) / 40));
-        const candidates = [];
-        for (let y = startY; y <= endY; y++) {
-            for (let angle = -10; angle <= 10; angle++) {
-                const slope = angle * .0125;
-                const sums = new Float32Array(segments);
-                const counts = new Uint16Array(segments);
-                for (let x = left; x < right; x += sampleStep) {
-                    const row = Math.round(y + (x - middle) * slope);
-                    if (row < edgeOffset || row + edgeOffset >= height) continue;
-                    const segment = Math.floor((x - left) * segments / (right - left));
-                    sums[segment] += pixels[(row + edgeOffset) * width + x] - pixels[(row - edgeOffset) * width + x];
-                    counts[segment]++;
-                }
-                const strengths = Array.from(sums, (sum, i) => sum / Math.max(1, counts[i]));
-                const average = strengths.reduce((a, b) => a + b, 0) / segments;
-                const aligned = strengths.filter(value => value * Math.sign(average) >= 9).length;
-                if (aligned >= 4 && Math.abs(average) >= 16) {
-                    candidates.push({y, slope, score: Math.abs(average), sign: Math.sign(average)});
-                }
-            }
-        }
-        candidates.sort((a, b) => b.score - a.score || Math.abs(a.slope) - Math.abs(b.slope));
-        const best = candidates[0];
-        const separation = Math.max(edgeOffset * 2 + 1, Math.round(height * .009));
-        if (!best || candidates.some(other =>
-            Math.abs(other.y - best.y + (other.slope - best.slope) * ((left + right) / 2 - middle)) > separation &&
-            other.score > best.score * .80)) return null;
-        return best;
-    }
-
-    function hasDoorJoin(pixels, width, height, edgeY, top) {
-        const offset = Math.max(2, Math.round(width * .007));
-        const firstRow = Math.round(edgeY + height * (top ? .045 : -.19));
-        const rowStep = Math.max(2, Math.round(height * .014));
-        const lastRow = Math.round(edgeY + height * (top ? .19 : -.045));
-        for (let x = Math.round(width * .45); x <= Math.round(width * .55); x += 2) {
-            let contrasts = 0;
-            let samples = 0;
-            for (let y = firstRow; y <= lastRow; y += rowStep) {
-                const i = y * width + x;
-                const left = pixels[i - offset], center = pixels[i], right = pixels[i + offset];
-                if (Math.max(left, center, right) - Math.min(left, center, right) >= 14) contrasts++;
-                samples++;
-            }
-            if (contrasts >= samples * .65) return true;
-        }
-        return false;
-    }
-
-    function judgeDoorEdges(pixels, width, height, top) {
-        if (width < 240 || height < 320) return 'retake-size';
-        const left = findDoorEdge(pixels, width, height, .30, .46);
-        const right = findDoorEdge(pixels, width, height, .54, .70);
-        if (!left || !right || left.sign !== right.sign) return 'retake-edge';
-        if (!hasDoorJoin(pixels, width, height, (left.y + right.y) / 2, top)) return 'retake-join';
-        if (Math.abs(left.slope - right.slope) > .175) return 'retake-angle';
-        const difference = left.y - right.y;
-        const magnitude = Math.abs(difference);
-        if (magnitude > height * .055) return 'retake-edge';
-        if (magnitude <= Math.max(2, height * .002)) return 'pass';
-        if (magnitude <= Math.max(4, height * .004)) return 'borderline';
-        return difference > 0 ? 'left' : 'right';
-    }
-
-    function measureCabinetGap(pixels, width, height) {
-        if (width < 240 || height < 320) return null;
-        const offset = Math.max(1, Math.round(height * .0015));
-        const start = Math.round(height * .39);
-        const end = Math.round(height * .61);
-        const samples = [];
-        for (let i = 0; i < 7; i++) {
-            const center = Math.round(width * (.20 + i * .10));
-            const half = Math.max(3, Math.round(width * .025));
-            const profile = new Float32Array(end - start + 1);
-            for (let y = start; y <= end; y++) {
-                let sum = 0;
-                for (let x = center - half; x <= center + half; x += 2) sum += pixels[y * width + x];
-                profile[y - start] = sum / (half + 1);
-            }
-            const candidates = [];
-            for (let y = offset; y < profile.length - offset; y++) {
-                const edge = profile[y + offset] - profile[y - offset];
-                if (Math.abs(edge) >= 14) candidates.push({ y, edge });
-            }
-            let best = null;
-            for (const upper of candidates) {
-                if (upper.edge >= 0) continue;
-                for (const lower of candidates) {
-                    const gap = lower.y - upper.y;
-                    if (lower.edge <= 0 || gap < offset * 2 + 1 || gap > height * .13) continue;
-                    const middle = (lower.y + upper.y) / 2;
-                    const score = Math.min(-upper.edge, lower.edge) - Math.abs(middle + start - height / 2) / height * 70;
-                    if (!best || score > best.score) best = { gap, score };
-                }
-            }
-            if (best) samples.push({ i, gap: best.gap });
-        }
-        if (samples.length < 5 || samples[0].i > 1 || samples.at(-1).i < 5) return null;
-        const first = samples[0], last = samples.at(-1);
-        const slope = (last.gap - first.gap) / (last.i - first.i);
-        const tolerance = Math.max(3, height * .003);
-        if (samples.some(({ i, gap }) => Math.abs(gap - (first.gap + slope * (i - first.i))) > tolerance)) return null;
-        return { left: first.gap - slope * first.i, right: last.gap + slope * (6 - last.i), height };
-    }
-
-    function summarizeFrames(shot, frames, comparable) {
-        if (shot.kind !== 'gap') {
-            const verdict = combineDoorFrames(frames.map(frame => frame.measurement));
-            const chosen = frames.find(frame => frame.measurement === verdict ||
-                (verdict === 'pass' && frame.measurement === 'borderline')) || frames[0];
-            return { photo: chosen.photo, verdict };
-        }
-        const usable = frames.filter(frame => frame.measurement);
-        for (const [i, frame] of usable.entries()) {
-            const { left, right, height } = frame.measurement;
-            const tolerance = Math.max(3, height * .003);
-            const agree = usable.slice(i + 1).some(({ measurement }) =>
-                Math.abs(left - measurement.left) <= tolerance && Math.abs(right - measurement.right) <= tolerance);
-            if (agree) return { photo: frame.photo, measurement: frame.measurement, comparable };
-        }
-        return { photo: frames[0].photo, measurement: null, comparable: false };
-    }
-
-    function finishAfter(changedIndices) {
-        stopCamera();
-        renderResults();
-        showScreen('results-screen');
-        const flagged = changedIndices.find(index => ['left', 'right'].includes(afterShots[index].verdict));
-        if (flagged !== undefined) openShotGuide(flagged);
-    }
-
-    function hasDetectedStep(record) {
-        return record.verdict === 'left' || record.verdict === 'right';
-    }
-
-    function openShotGuide(index) {
-        const shot = shotPlan[index];
-        if (!shot || !afterShots[index] || !hasDetectedStep(afterShots[index])) return;
-        const verdict = afterShots[index].verdict;
-        guideShotIndex = index;
-        openManualDirect('door_gap_' + verdict, true);
-        const notice = byId('failReasonText');
-        const unit = verdict === 'left' ? shot.left : shot.left + 1;
-        const side = verdict === 'left' ? '왼쪽' : '오른쪽';
-        notice.textContent = `${unit}번(${side}) 도어 ${shot.label}이 5mm 낮습니다.`;
-        notice.style.display = 'block';
-        byId('guideHeaderSub').textContent = '도어 단차 조정 가이드';
-        const list = byId('guideShotList');
-        const detected = shotPlan.flatMap((target, i) =>
-            afterShots[i] && hasDetectedStep(afterShots[i]) ? [{target, i}] : []);
-        list.hidden = false;
-        const heading = document.createElement('p');
-        heading.className = 'ready-desc';
-        heading.textContent = `단차 감지 ${detected.length}곳 · 확인할 부위를 선택하세요.`;
-        list.appendChild(heading);
-        for (const {target, i} of detected) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.className = 'sub-action-btn';
-            button.textContent = target.title;
-            button.setAttribute('aria-pressed', String(i === index));
-            button.onclick = () => openShotGuide(i);
-            list.appendChild(button);
-        }
-    }
-
-    function gapSummary(record) {
-        if (!record.measurement) return '가구장과 도어 경계 확인 필요';
-        const { left, right, height } = record.measurement;
-        const pixels = Math.round((left + right) / 2);
-        if (Math.abs(left - right) <= Math.max(3, height * .004)) return `약 ${pixels}px · 간격이 고르게 보임`;
-        return `약 ${pixels}px · ${left > right ? '왼쪽' : '오른쪽'} 간격이 더 넓게 보임`;
-    }
-
-    function gapChange(before, after) {
-        if (!after.comparable || !before.measurement || !after.measurement) return '수리 전후 차이는 겹친 사진에서 확인하세요.';
-        const first = before.measurement, next = after.measurement;
-        const scale = first.height / next.height;
-        const left = next.left * scale - first.left;
-        const right = next.right * scale - first.right;
-        const tolerance = Math.max(5, first.height * .005);
-        return Math.max(Math.abs(left), Math.abs(right)) <= tolerance
-            ? '수리 전후 간격 차이가 뚜렷하지 않음'
-            : '수리 전후 간격 차이 감지';
-    }
-
-    function pairSummary(shot, record) {
-        if (record.verdict === 'pass') return 'PASS · 높이 차이가 뚜렷하지 않음';
-        if (record.verdict === 'left') return `${shot.left}번(왼쪽) 도어 ${shot.label}이 5mm 낮습니다.`;
-        if (record.verdict === 'right') return `${shot.left + 1}번(오른쪽) 도어 ${shot.label}이 5mm 낮습니다.`;
-        return pairReviewReason(record.verdict) || '사진을 겹쳐 보거나 이 부위를 다시 촬영해 주세요.';
-    }
-
-    function pairReviewReason(verdict) {
-        const reasons = {
-            'retake-size': '사진 해상도가 낮습니다.',
-            'retake-edge': '양쪽 도어 모서리를 선명하게 찾기 어렵습니다.',
-            'retake-join': '두 도어 사이의 틈을 찾기 어렵습니다.',
-            'retake-angle': '두 도어가 서로 다른 각도로 보입니다.',
-            review: '촬영 프레임의 높이 판정이 일치하지 않습니다.'
-        };
-        return reasons[verdict];
-    }
-
-    function baselineRetakeReason(shot, record) {
-        if (shot.kind === 'gap') {
-            return record.measurement ? '' : '가구장 아랫선과 도어 윗선을 안정적으로 찾기 어렵습니다.';
-        }
-        if (record.verdict === 'pass' || hasDetectedStep(record)) return '';
-        return pairReviewReason(record.verdict) || '기준으로 쓸 수 있는 사진을 얻지 못했습니다.';
-    }
-
-    function pairBaseline(shot, record) {
-        if (record.verdict === 'pass') return '높이 차이가 뚜렷하지 않음';
-        if (record.verdict === 'left') return shot.left + '번 도어가 낮게 보임';
-        if (record.verdict === 'right') return (shot.left + 1) + '번 도어가 낮게 보임';
-        return '높이 확인 필요';
-    }
-
-    function resultPhotoReview(before, after) {
-        const details = document.createElement('details');
-        details.className = 'photo-review';
-        details.innerHTML = `
-            <summary>수리 전후 사진 겹쳐 보기</summary>
-            <div class="review-images"><img alt="수리 전"><img alt="수리 후"></div>
-            <label class="review-blend">수리 전
-                <input type="range" value="50" aria-label="수리 후 사진 투명도">
-                수리 후
-            </label>`;
-        const [first, next] = details.querySelectorAll('img');
-        first.src = before.photo.src;
-        next.src = after.photo.src;
-        next.style.opacity = .5;
-        details.querySelector('input').addEventListener('input', event => { next.style.opacity = event.target.value / 100; });
-        return details;
-    }
-
-    function renderResults() {
-        const pairs = afterShots.slice(1);
-        const detected = pairs.filter(hasDetectedStep).length;
-        const passed = pairs.filter(record => record.verdict === 'pass').length;
-        const pending = pairs.length - detected - passed;
-        byId('resultTitle').textContent = passed === pairs.length ? '도어 이음부 PASS' : '부위별 설치 상태 확인';
-        byId('resultSummary').textContent = `도어 이음부 · 단차 감지 ${detected}곳 · 판정 보류 ${pending}곳 · PASS ${passed}곳`;
-        const rows = byId('resultRows');
-        rows.replaceChildren();
-        for (const [kind, label] of [['gap', '상부 가구장 간격'], ['top', '도어 상단'], ['bottom', '도어 하단']]) {
-            const group = document.createElement('section');
-            group.className = 'results-group';
-            const heading = document.createElement('h2');
-            heading.textContent = label;
-            group.appendChild(heading);
-            rows.appendChild(group);
-            shotPlan.forEach((shot, index) => {
-                if (shot.kind !== kind) return;
-                const before = beforeShots[index], after = afterShots[index];
-                const card = document.createElement('article');
-                card.className = 'card-box result-row';
-                card.innerHTML = '<h3></h3><p class="ready-desc"></p><p class="ready-desc"></p><div class="btn-group"><button class="sub-action-btn" type="button">이 부위 다시 촬영</button></div>';
-                card.querySelector('h3').textContent = shot.title;
-                if (kind !== 'gap') {
-                    const status = document.createElement('span');
-                    const detected = hasDetectedStep(after);
-                    const passed = after.verdict === 'pass';
-                    status.className = 'result-status ' + (detected ? 'adjust' : passed ? 'pass' : 'review');
-                    status.textContent = detected ? '단차 감지' : passed ? 'PASS' : '판정 보류';
-                    card.querySelector('h3').after(status);
-                }
-                const [baseline, result] = card.querySelectorAll('p');
-                baseline.textContent = '수리 전 · ' + (kind === 'gap' ? gapSummary(before) : pairBaseline(shot, before));
-                result.textContent = kind === 'gap'
-                    ? '수리 후 · ' + gapSummary(after) + ' / ' + gapChange(before, after)
-                    : '수리 후 · ' + pairSummary(shot, after);
-                const buttons = card.querySelector('.btn-group');
-                buttons.firstElementChild.onclick = () => retryShot(index);
-                if (hasDetectedStep(after)) {
-                    const guide = document.createElement('button');
-                    guide.type = 'button';
-                    guide.className = 'sub-action-btn';
-                    guide.textContent = '조정 GIF 보기';
-                    guide.onclick = () => openShotGuide(index);
-                    buttons.prepend(guide);
-                }
-                card.insertBefore(resultPhotoReview(before, after), buttons);
-                group.appendChild(card);
-            });
-        }
-    }
     let levelSignalTimer;
     let levelRequest = 0;
 
@@ -1433,7 +1336,8 @@
     }
 
     function cancelExit() {
-        if (screenBeforeExit === 'capture-screen') openCapture();
+        if (screenBeforeExit === 'camera1-screen') startCamera(1);
+        else if (screenBeforeExit === 'camera2-screen') startCamera(2);
         else showScreen(screenBeforeExit);
     }
 
