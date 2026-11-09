@@ -248,6 +248,31 @@
         }
         #alignmentPhotos .alignment-shot.issue-left::before { left: 8px; }
         #alignmentPhotos .alignment-shot.issue-right::before { right: 8px; }
+        /* 사진 기반 자동 경계선 분석 · 현장 판정 정확도 미검증 */
+        .auto-overview { border: 1px solid #bbd8ed; background: #f3faff; border-radius: 13px; padding: 13px; display: flex; flex-direction: column; gap: 9px; }
+        .auto-overview h3 { font-size: 15px; color: #115a95; }
+        .auto-summary { font-weight: 750; color: #365c78; font-size: 12.5px; line-height: 1.55; }
+        .auto-suspect { width: 100%; border-radius: 9px; padding: 12px; background: #fff7f6; border: 1px solid #e4aba6; text-align: left; color: #9d291e; font-size: 13px; line-height: 1.55; font-weight: 800; cursor: pointer; }
+        .auto-suspect span { display: block; color: #7a5751; font-size: 11.5px; margin-top: 5px; }
+        .auto-status { border-radius: 10px; padding: 12px; font-size: 14px; line-height: 1.6; font-weight: 850; background: #ecf6ff; color: #175e9d; border: 1px solid #b9dafa; }
+        .auto-status.issue { background: #fff3f1; color: #a9281d; border-color: #eeb7b0; }
+        .auto-status.retake { background: #fff7e6; color: #815618; border-color: #f0d6a3; }
+        .auto-status.uncertain { background: #f1f3f6; color: #5e6672; border-color: #d4d8dd; }
+        .analysis-marked-photo { display: block; width: 100%; height: 210px; object-fit: contain; background: #171d25; }
+        .analysis-inline-actions { display: flex; flex-direction: column; gap: 7px; }
+        .manual-fallback { border-top: 1px solid #d6e0e9; margin-top: 13px; padding-top: 10px; }
+        .manual-fallback summary { color: #43637d; font-weight: 800; cursor: pointer; font-size: 13px; }
+        .manual-fallback p { font-size: 11.5px; line-height: 1.6; color: #647388; padding: 8px 0; }
+        .camera-guides { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+        .camera-guides .line { position: absolute; left: 9%; width: 82%; border-top: 2px dashed rgba(130,215,255,.85); display: block; }
+        .camera-guides .line.lower { border-top-color: rgba(255,218,124,.95); }
+        .camera-guides .line.vertical { top: 28%; left: 50%; height: 44%; width: 0; border-top: 0; border-left: 2px dashed rgba(80,255,172,.87); }
+        .camera-guides.top .upper { top: 40%; }
+        .camera-guides.top .lower { top: 62%; }
+        .camera-guides.seam .upper { top: 51%; }
+        .camera-guides.seam .lower { display: none; }
+        .camera-guides.top .vertical { display: none; }
+        @media (max-width:370px) { .analysis-marked-photo { height: 165px; } }
     </style>
 </head>
 <body>
@@ -310,6 +335,7 @@
                 <button type="button" onclick="leaveCamera(1)">뒤로</button>
                 <button type="button" onclick="returnHome()">처음으로</button>
             </div>
+            <div class="camera-guides top" id="beforeAnalysisGuides" aria-hidden="true"><span class="line upper"></span><span class="line lower"></span><span class="line vertical"></span></div>
             <div class="camera-overlay">
                 <div class="level-bar"><span>도어·가구장 경계가 보이도록 촬영하세요</span></div>
                 <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
@@ -378,6 +404,7 @@
         <div class="camera-container">
             <video id="videoFeed2" playsinline autoplay muted></video>
             <img id="ghostImg" class="ghost-overlay" alt="현재 부위의 수리 전 기준 사진">
+            <div class="camera-guides top" id="afterAnalysisGuides" aria-hidden="true"><span class="line upper"></span><span class="line lower"></span><span class="line vertical"></span></div>
             <div class="camera-back camera-nav">
                 <button type="button" onclick="leaveCamera(2)">뒤로</button>
                 <button type="button" onclick="returnHome()">처음으로</button>
@@ -502,9 +529,14 @@
     <div id="pass-screen" class="screen result-container">
         <div id="resultTitle" class="pass-title">촬영 완료 · 도어 정렬 확인</div>
         <div id="resultDetail" class="pass-sub"></div>
+        <section class="auto-overview" aria-live="polite" aria-label="수리 후 사진 자동 분석 결과">
+            <h3>사진 경계선 자동 분석 · 시험 기능</h3>
+            <div id="autoOverviewSummary" class="auto-summary">수리 후 촬영을 완료하면 분석을 시작합니다.</div>
+            <div id="autoOverviewFindings"></div>
+        </section>
         <div class="result-tab-row" role="tablist" aria-label="결과 보기">
             <button id="restoreTab" type="button" role="tab" aria-selected="true" class="result-tab active" onclick="switchResultMode('restore')">① 수리 전후 복귀 비교</button>
-            <button id="alignmentTab" type="button" role="tab" aria-selected="false" class="result-tab" onclick="switchResultMode('alignment')">② 수리 후 도어 정렬</button>
+            <button id="alignmentTab" type="button" role="tab" aria-selected="false" class="result-tab" onclick="switchResultMode('alignment')">② 수리 후 자동 분석</button>
         </div>
         <section id="restorePane" role="tabpanel" aria-labelledby="restoreTab">
             <div class="review-compare">
@@ -525,14 +557,22 @@
         </section>
         <section id="alignmentPane" role="tabpanel" aria-labelledby="alignmentTab" hidden>
             <div class="review-compare">
-                <p class="analysis-intro">수리 후 사진을 기준으로 <strong>가구장 간격·인접 도어 높낮이·개별 도어 좌우 기울기</strong>를 확인하세요. 아래 상태는 작업자가 직접 선택하며 자동 합격 판정이 아닙니다.</p>
+                <p class="analysis-intro">사진의 <strong>가구장 하단·도어 끝선·도어 이음부</strong>를 분석해 이상 위치를 먼저 제안합니다. 선을 찾지 못하면 재촬영을 권고합니다. 촬영 각도에 따른 오차가 있으므로 이 결과만으로 불량 확정이나 합격 판정을 하지 않습니다.</p>
                 <label class="fridge-count-title" for="alignmentSelect">확인할 항목</label>
                 <select id="alignmentSelect" class="review-selector" onchange="setAlignmentItem(this.value)"></select>
                 <div id="alignmentQuestion" class="review-caption"></div>
                 <p id="alignmentInstruction" class="compact-info"></p>
                 <div id="alignmentPhotos" class="alignment-photos"></div>
                 <p id="alignmentImageNote" class="note-attention"></p>
-                <label class="fridge-count-title" for="alignmentStatus">현장 확인 결과 · 작업자 선택</label>
+                <div id="autoAnalysisStatus" class="auto-status" role="status"></div>
+                <div class="analysis-inline-actions">
+                    <button id="autoGuideBtn" type="button" class="main-action-btn" onclick="openGuideForFinding()" hidden>이 위치 조정 가이드 보기</button>
+                    <button id="autoRetakeBtn" type="button" class="sub-action-btn" onclick="revisitCurrentAlignment()">이 부위만 다시 촬영하기</button>
+                </div>
+                <details class="manual-fallback">
+                    <summary>자동 분석 결과가 맞지 않나요? 현장 확인·수동 보정</summary>
+                    <p>자동 검출이 실패하거나 방향이 잘못된 경우에만 사용하세요. 이 선택은 작업자의 판단이며 자동 분석 결과와 구분해 표시합니다.</p>
+                    <label class="fridge-count-title" for="alignmentStatus">현장 확인 결과 · 작업자 선택</label>
                 <select id="alignmentStatus" class="review-selector" onchange="saveAlignmentStatus(this.value)">
                     <option value="unreviewed">미확인</option>
                     <option value="good">정렬 양호 (작업자 확인)</option>
@@ -543,10 +583,11 @@
                     <label class="fridge-count-title" for="alignmentDirection">어느 부분이 높거나 간격이 좁나요?</label>
                     <select id="alignmentDirection" class="review-selector" onchange="saveFindingDirection(this.value)"></select>
                 </div>
+                </details>
                 <div id="alignmentFinding" class="finding-panel" hidden aria-live="polite">
                     <div class="finding-title">⚠ 조정 위치 확인</div>
                     <p id="alignmentFindingText" class="finding-message"></p>
-                    <p class="finding-notice">이 위치는 작업자가 선택한 현장 관찰 결과입니다. 자동 분석으로 확정한 결과가 아닙니다. 가구장 상태·촬영 각도·설치 상태 등을 먼저 확인하세요.</p>
+                    <p id="alignmentFindingNotice" class="finding-notice">자동 경계선 분석은 시험 기능으로 실제 현장 정확도가 검증되지 않았습니다. 조정하기 전 설치 상태와 모델별 기준을 확인하세요.</p>
                     <button type="button" class="main-action-btn" onclick="openGuideForFinding()">해당 부위 조정 가이드 보기</button>
                 </div>
                 <p id="alignmentProgress" class="review-progress" aria-live="polite"></p>
@@ -555,7 +596,7 @@
                     <button type="button" class="sub-action-btn" onclick="moveAlignment(1)">다음 항목 →</button>
                 </div>
             </div>
-            <p class="note-attention">중력 기준의 절대 수평은 점검 대상이 아닙니다. 정확한 mm 값·자동 정상/불량 판정은 아직 제공하지 않습니다. 개별 도어 전체 좌우 기울기는 근접 이음부 사진만으로 확인하기 어려울 수 있어 현장 확인이 필요합니다.</p>
+            <p class="note-attention">중력 기준의 절대 수평과 mm 값은 분석하지 않습니다. 본 기능은 전통적 영상 경계선 검출이며 AI 학습 모델이 아닙니다. 개별 도어 전체 좌우 기울기는 현재 이음부 근접 사진만으로 자동 분석할 수 없어 추가 촬영 구도 검증이 필요합니다.</p>
         </section>
         <div class="btn-group">
             <button class="main-action-btn" onclick="revisitAfterCapture()">선택한 부위 수리 후 다시 촬영</button>
@@ -579,7 +620,7 @@
         <div class="finding-dialog" role="dialog" aria-modal="true" aria-labelledby="findingModalTitle" aria-describedby="findingModalText">
             <h2 id="findingModalTitle">조정 위치를 확인해 주세요</h2>
             <p id="findingModalText"></p>
-            <p class="finding-notice">사진만으로 조정 원인이 확정된 것은 아닙니다. 부위와 모델을 확인하고 조정 가이드를 참고하세요.</p>
+            <p id="findingModalNote" class="finding-notice">자동 분석은 현장 정확도가 검증되지 않았습니다. 실제 위치와 모델을 확인한 후 조정 가이드를 참고하세요.</p>
             <button id="findingModalGuideBtn" class="main-action-btn" onclick="openGuideForFinding()">해당 도어 조정 가이드 보기</button>
             <button type="button" class="sub-action-btn" onclick="closeFindingModal()">결과 화면에서 계속 확인</button>
         </div>
@@ -601,7 +642,9 @@
     let resultMode = 'restore';
     let alignmentItems = [];
     const alignmentStatuses = new Map();
-    const alignmentDirections = new Map(); // 작업자가 선택한 좌측/우측 위치 (자동 판정 아님)
+    const alignmentDirections = new Map(); // 현장 작업자 수동 선택 기록, 자동 결과와 분리
+    const autoAnalyses = new Map(); // 수리 후 각 사진을 실제 경계선 코드로 분석한 시범 결과
+    const autoPromptShownKeys = new Set();
     let currentAlignmentKey = null;
     let guideRetakeKey = null;
     let guideReturnAlignmentKey = null;
@@ -811,6 +854,8 @@
         alignmentItems = buildAlignmentItems(count, referenceDoor);
         alignmentStatuses.clear();
         alignmentDirections.clear();
+        autoAnalyses.clear();
+        autoPromptShownKeys.clear();
         closeFindingModal();
         guideRetakeKey = null;
         guideReturnAlignmentKey = null;
@@ -865,8 +910,12 @@
         document.getElementById(prefix + 'StepCount').textContent =
             `${before ? '수리 전' : '수리 후'} · ${shotIndex+1}/${shotPlan.length} · ${shot.group}`;
         document.getElementById(prefix + 'StepTitle').textContent = shot.title;
-        document.getElementById(prefix + 'StepDesc').textContent = before ? shot.desc :
-            '수리 전 사진은 구도 참고용입니다. 가로 경계선과 세로 이음부가 선명하면 안정 후 자동 촬영합니다. ' + shot.desc;
+        document.getElementById(prefix + 'StepDesc').textContent =
+            (shot.group === '기준 간격' ? '파랑 선: 가구장 하단 / 노랑 선: 도어 상단. ' :
+             '도어 이음부를 초록 세로선에, 좌우 도어 끝을 파랑 가로선에 맞춰주세요. ') +
+            (before ? '' : '고스트는 구도 참고용이며, 안정 후 자동 촬영을 시도합니다. ') + shot.desc;
+        document.getElementById(prefix === 'before' ? 'beforeAnalysisGuides' : 'afterAnalysisGuides').className =
+            'camera-guides ' + (shot.group === '기준 간격' ? 'top' : 'seam');
         document.getElementById(prefix + 'Previous').disabled = shotIndex === 0;
         if (!before) {
             const ref = beforePhotos.get(shot.key);
@@ -898,6 +947,8 @@
         alignmentItems = [];
         alignmentStatuses.clear();
         alignmentDirections.clear();
+        autoAnalyses.clear();
+        autoPromptShownKeys.clear();
         closeFindingModal();
         guideRetakeKey = null;
         guideReturnAlignmentKey = null;
@@ -1079,7 +1130,12 @@
                         const elapsed = now - stableSince;
                         hold.style.width = Math.min(100, elapsed / holdMs * 100) + '%';
                         hint.textContent = elapsed < holdMs ? '기준선 확인 · 그대로 유지해 주세요' : '자동 촬영';
-                        if (elapsed >= holdMs) { takeAfterPhoto(true); return; }
+                        if (elapsed >= holdMs) {
+                            const pictureCheck = analyzeAlignmentPhoto(video,shot);
+                            if (pictureCheck.state !== 'retake') { takeAfterPhoto(true); return; }
+                            stableSince = null; hold.style.width = '0';
+                            hint.textContent = '경계선 분석 어려움 · 구도 조정 또는 수동 촬영';
+                        }
                     } else {
                         stableSince = null;
                         hold.style.width = '0';
@@ -1135,6 +1191,9 @@
         (step === 1 ? beforePhotos : afterPhotos).set(key, photo);
         if (step === 2) {
             // 새 사진을 찍었다면 기존 사진에 대해 내려진 수동 확인 판단은 유지할 수 없습니다.
+            const shotRecord = shotPlan.find(s => s.key === key);
+            if (shotRecord) autoAnalyses.set(key, analyzeAlignmentPhoto(photo, shotRecord));
+            autoPromptShownKeys.delete(key);
             for (const item of alignmentItems) {
                 if (item.photoKeys.includes(key)) {
                     alignmentStatuses.delete(item.key);
@@ -1165,24 +1224,228 @@
         document.getElementById('ghostImg').style.opacity = val / 100;
     }
 
+/* DDak-Fit prototype geometric line detector.
+ * Browser Canvas only, no remote AI model and NO millimetre calibration.
+ * Returns an indication ONLY when both photo framing and internal consistency checks succeed.
+ */
+function samplePhotoGray(photo) {
+    const origW = photo.naturalWidth || photo.videoWidth, origH = photo.naturalHeight || photo.videoHeight;
+    if (!origW || !origH) return null;
+    const isLiveVideo = photo.tagName === 'VIDEO' && photo.clientWidth && photo.clientHeight;
+    const width = 360, height = Math.round(360 * (isLiveVideo ? photo.clientHeight / photo.clientWidth : origH / origW));
+    if (height < 220 || height > 1400) return null;
+    const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    if (photo.tagName==='VIDEO' && photo.clientWidth && photo.clientHeight) {
+        const ratio=photo.clientWidth/photo.clientHeight;
+        const srcW=photo.videoWidth,srcH=photo.videoHeight;
+        const cropW=Math.min(srcW,srcH*ratio),cropH=Math.min(srcH,cropW/ratio);
+        ctx.drawImage(photo,(srcW-cropW)/2,(srcH-cropH)/2,cropW,cropH,0,0,width,height);
+    } else ctx.drawImage(photo,0,0,width,height);
+    const rgba = ctx.getImageData(0, 0, width, height).data;
+    const gray = new Float32Array(width * height);
+    let sum = 0, sq = 0;
+    for (let i=0; i<gray.length; i++) {
+        const j = i*4; const g = rgba[j]*.299 + rgba[j+1]*.587 + rgba[j+2]*.114;
+        gray[i] = g; sum += g; sq += g*g;
+    }
+    const avg = sum/gray.length;
+    return {gray, width, height, contrast:Math.sqrt(Math.max(0, sq/gray.length - avg*avg)), avg};
+}
+function localRowPeaks(image, x, yMin, yMax, target) {
+    const {gray, width:w, height:h} = image;
+    const result = [];
+    const start = Math.max(5, Math.round(yMin*h)), end = Math.min(h-6,Math.round(yMax*h));
+    const values = [];
+    for (let y=start; y<=end; y++) {
+        let v=0;
+        for (let dx=-4; dx<=4; dx+=2) {
+            const xx=Math.round(x*w)+dx;
+            const p=(gray[(y+2)*w+xx]-gray[(y-2)*w+xx])*.5;
+            v += p;
+        }
+        values.push(v/5);
+    }
+    for (let i=3; i<values.length-3; i++) {
+        const v=values[i], a=Math.abs(v);
+        if (a < 9) continue;
+        if (a<=Math.abs(values[i-1]) || a<Math.abs(values[i+1])) continue;
+        if (a<Math.abs(values[i-2])*.94 || a<Math.abs(values[i+2])*.94) continue;
+        result.push({x:x*w, y:start+i, sign:Math.sign(v), strength:a,
+            score:a/(1+Math.abs((start+i)/h-target)*3)});
+    }
+    return result.sort((a,b)=>b.score-a.score).slice(0,14);
+}
+function fitGuidedLine(image, columns, target, radius) {
+    const {height:h, width:w} = image;
+    const points = columns.map(x => localRowPeaks(image, x, target-radius, target+radius, target));
+    const candidates = [];
+    const first = points[0], last = points[points.length-1];
+    for (const a of first) for (const b of last) {
+        if (a.sign !== b.sign) continue;
+        const m=(b.y-a.y)/(b.x-a.x), midY = a.y + m*(w/2-a.x);
+        if (Math.abs(m) > .30 || Math.abs(midY/h-target) > radius) continue;
+        const supports=[];
+        for (let i=0; i<points.length; i++) {
+            const px=columns[i]*w;
+            const choices=points[i].filter(p=>p.sign===a.sign && Math.abs(p.y-(a.y+m*(p.x-a.x)))<=Math.max(3,h*.006));
+            if (choices.length) supports.push(choices.sort((c,d)=>Math.abs(c.y-(a.y+m*(c.x-a.x))) - Math.abs(d.y-(a.y+m*(d.x-a.x))))[0]);
+        }
+        if (supports.length < Math.max(3,columns.length-1)) continue;
+        const meanX=supports.reduce((s,p)=>s+p.x,0)/supports.length;
+        const meanY=supports.reduce((s,p)=>s+p.y,0)/supports.length;
+        let numer=0,denom=0;
+        for(const p of supports){numer+=(p.x-meanX)*(p.y-meanY);denom+=(p.x-meanX)**2;}
+        const slope=denom>0?numer/denom:m;
+        const intercept=meanY-slope*meanX;
+        const rms=Math.sqrt(supports.reduce((s,p)=>s+(p.y-(slope*p.x+intercept))**2,0)/supports.length);
+        if (rms > Math.max(2.8,h*.005) || Math.abs(slope)>.3) continue;
+        const strength=supports.reduce((s,p)=>s+p.strength,0)/supports.length;
+        const center=intercept+slope*w/2;
+        const closeness=Math.abs(center/h-target);
+        const score=supports.length*15 + Math.min(60,strength)*.38 - rms*6 - closeness*45;
+        candidates.push({m:slope,b:intercept,strength, center, rms, count:supports.length, sign:a.sign, score});
+    }
+    candidates.sort((a,b)=>b.score-a.score);
+    if (!candidates.length) return null;
+    const best=candidates[0];
+    // If another comparably strong line is spatially distinct, the intended physical boundary is ambiguous.
+    const competing=candidates.find(c => Math.abs(c.center-best.center)>h*.018 && c.score>best.score-6);
+    if (competing) return null;
+    return best;
+}
+function seeVerticalDoorSeam(image) {
+    const {gray,width:w,height:h} = image;
+    let best={strength:0, x:null};
+    for(let xf=.43;xf<=.57;xf+=.008){
+        const x=Math.round(w*xf); let sum=0,blocks=0;
+        for(let y=Math.round(h*.27);y<Math.round(h*.73);y+=Math.max(4,Math.round(h*.035))){
+            let strength=0;
+            for(let dy=-2;dy<=2;dy+=2){
+                const yy=y+dy;
+                strength+=Math.abs(gray[yy*w+x+3]-gray[yy*w+x-3]);
+            }
+            const a=strength/3;
+            if(a>13)blocks++;
+            sum+=Math.min(65,a);
+        }
+        const avg=sum/Math.max(1,Math.round(h*.46)/Math.max(4,Math.round(h*.035)));
+        if(blocks>=6 && avg>best.strength) best={strength:avg,x};
+    }
+    return best.strength>=14?best:null;
+}
+function lineY(line,x){return line.b+line.m*x;}
+function evaluateCabinetGap(image) {
+    const {width:w,height:h,gray}=image;
+    // Shooting guide expects the cabinet lower edge at ~40%, door upper edge at ~61%.
+    const cols=[.20,.31,.42,.58,.69,.80];
+    const cabinet=fitGuidedLine(image,cols,.40,.125);
+    const door=fitGuidedLine(image,cols,.62,.125);
+    if(!cabinet || !door) return {state:'retake',reason:'상부장 하단과 도어 윗선을 두 개의 가로 가이드 위치에 맞춰 다시 촬영해 주세요.'};
+    if (door.center-cabinet.center < h*.07 || door.center-cabinet.center > h*.33)
+        return {state:'retake', reason:'상부장·도어 경계가 구분되지 않습니다. 검은 간격과 두 경계가 함께 보이게 촬영해 주세요.'};
+    // False-positive protection: the slot should be darker than the solid surfaces on both sides.
+    let successful=0;
+    for (const xf of [.23,.32,.41,.59,.68,.77]) {
+        const x=Math.round(xf*w);
+        const cy=lineY(cabinet,x),dy=lineY(door,x);
+        const mid=Math.round((cy+dy)/2);
+        const span=Math.round((dy-cy)*.19);
+        if (cy-span<0 || dy+span>=h) continue;
+        const gap=gray[mid*w+x];
+        const above=gray[Math.round(cy-span)*w+x];
+        const below=gray[Math.round(dy+span)*w+x];
+        if(gap+9<above && gap+9<below) successful++;
+    }
+    if(successful<4) return {state:'retake',reason:'두 경계 사이의 어두운 간격을 확인하지 못했습니다. 도어와 상부장 사이를 정면에서 촬영해 주세요.'};
+    const gapLeft=lineY(door,w*.22)-lineY(cabinet,w*.22);
+    const gapRight=lineY(door,w*.78)-lineY(cabinet,w*.78);
+    const delta=gapLeft-gapRight;
+    const deadZone=Math.max(5,h*.011);
+    const ambiguous=Math.max(3,h*.006);
+    const common={kind:'top', cabinet,door, gapLeft,gapRight,delta, width:w,height:h};
+    if(Math.abs(delta) >= deadZone) return {...common,state:'issue',side:delta<0?'left':'right',
+        reason:delta<0?'좌측 상부장 간격이 더 좁게 검출되었습니다.':'우측 상부장 간격이 더 좁게 검출되었습니다.'};
+    if(Math.abs(delta)<ambiguous) return {...common,state:'no-clear-difference',reason:'좌우 상부장 간격에서 뚜렷한 차이가 검출되지 않았습니다.'};
+    return {...common,state:'uncertain',reason:'좌우 간격 차이가 촬영 오차와 구분하기 어려운 범위입니다.'};
+}
+function evaluateSeam(image,shot) {
+    const {width:w,height:h}=image;
+    const seam=seeVerticalDoorSeam(image);
+    if (!seam) return {state:'retake',reason:'화면 중앙에서 도어 사이 세로 이음부를 확인할 수 없습니다. 이음부가 선명하게 보이도록 촬영해 주세요.'};
+    const left=fitGuidedLine(image,[.19,.30,.41],.51,.105);
+    const right=fitGuidedLine(image,[.59,.70,.81],.51,.105);
+    if(!left || !right) return {state:'retake',reason:'이음부 좌우에 같은 종류의 도어 가로 끝선이 보이지 않습니다. 가로 가이드에 맞춰 다시 촬영해 주세요.'};
+    if(left.sign!==right.sign) return {state:'retake',reason:'좌우에서 서로 다른 경계선이 검출됐습니다. 도어 끝선이 모두 보이게 촬영해 주세요.'};
+    const ly=lineY(left,w*.45),ry=lineY(right,w*.55);
+    const d=ly-ry; // positive = left door appears lower
+    const common={kind:'seam',left,right,seam,width:w,height:h,delta:d};
+    if(Math.abs(d)>=Math.max(7,h*.013)) return {...common,state:'issue',side:d>0?'right':'left',
+        reason:d>0?'오른쪽 도어가 왼쪽보다 높게 검출되었습니다.':'왼쪽 도어가 오른쪽보다 높게 검출되었습니다.'};
+    if(Math.abs(d)<Math.max(3,h*.006)) return {...common,state:'no-clear-difference',reason:'인접 도어의 높이에서 뚜렷한 차이가 검출되지 않았습니다.'};
+    return {...common,state:'uncertain',reason:'높이 차이가 촬영 오차와 구분하기 어려운 범위입니다.'};
+}
+function analyzeAlignmentPhoto(photo, shot) {
+    try {
+        const sampled=samplePhotoGray(photo);
+        if(!sampled || sampled.contrast<17 || sampled.avg<25 || sampled.avg>242)
+            return {state:'retake',reason:'화면이 너무 흐리거나 어둡고 밝아 도어 경계선을 확인할 수 없습니다.'};
+        return shot.group==='기준 간격'?evaluateCabinetGap(sampled):evaluateSeam(sampled,shot);
+    } catch(error) {
+        console.warn('자동 경계선 분석 오류',error);
+        return {state:'retake',reason:'자동 분석 중 경계선을 확인하지 못했습니다. 다시 촬영해 주세요.'};
+    }
+}
+function drawDetectedEdges(canvas,photo,analysis) {
+    const w=analysis.width||360,h=analysis.height||640;
+    canvas.width=w;canvas.height=h;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(photo,0,0,w,h);
+    if(!analysis.kind)return;
+    const drawLine=(line,color,x0,x1)=>{
+        ctx.beginPath();ctx.moveTo(x0,lineY(line,x0));ctx.lineTo(x1,lineY(line,x1));
+        ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.88)';ctx.stroke();
+        ctx.lineWidth=2;ctx.strokeStyle=color;ctx.stroke();
+    };
+    if(analysis.kind==='top') {
+        drawLine(analysis.cabinet,'#74d7ff',w*.17,w*.83);
+        drawLine(analysis.door,'#ffdb65',w*.17,w*.83);
+        for(const x of [w*.22,w*.78]){
+            ctx.beginPath();ctx.moveTo(x,lineY(analysis.cabinet,x));ctx.lineTo(x,lineY(analysis.door,x));
+            ctx.setLineDash([5,3]);ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+        }
+    } else {
+        drawLine(analysis.left,'#74d7ff',w*.17,w*.46);
+        drawLine(analysis.right,'#ffdb65',w*.54,w*.83);
+        ctx.beginPath();ctx.moveTo(analysis.seam.x,h*.28);ctx.lineTo(analysis.seam.x,h*.72);
+        ctx.setLineDash([6,4]);ctx.strokeStyle='#4effa6';ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);
+    }
+    if(analysis.state==='issue'){
+        ctx.fillStyle='rgba(191,40,33,.9)'; const highRight=analysis.side==='right';
+        const x=highRight?w*.68:w*.32, y=h*.27;
+        ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.fill();
+        ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff';ctx.fillText('!',x,y+6);
+    }
+}
+
     function buildAlignmentItems(count, reference) {
         const items = [
             { key: `top-${reference}`, title: '기준 도어 ↔ 상부 가구장 간격',
               group: '상부 간격', photoKeys: [`top-${reference}`],
-              question: `${reference}번 기준 도어의 좌우에서 가구장 하단과 도어 상단 간격이 균일한가요?`,
-              note: '가구장과 도어의 두 경계가 함께 보이는지 확인하세요. 도어가 가구장과 평행한지 눈으로 점검합니다.' }
+              question: `${reference}번 기준 도어의 좌우에서 가구장 하단과 도어 상단 간격 차이를 분석합니다.`,
+              note: '가구장 하단·도어 상단의 두 경계를 자동 검출하고, 좌우 간격을 비교합니다. 경계선을 잘못 찾으면 재촬영을 권고합니다.' }
         ];
         for (let i=1; i<count; i++) {
             items.push({key: `upper-${i}-${i+1}`, group: '인접 도어 상단',
                 title: `${i}–${i+1}번 도어 상단 높이`, photoKeys: [`upper-${i}-${i+1}`],
-                question: `${i}번과 ${i+1}번 도어의 상단 높이가 맞나요?`,
-                note: '수리 후 사진에서 두 도어 윗선의 상대적인 높이를 직접 확인하세요.'});
+                question: `${i}번과 ${i+1}번 도어의 상단 중 어느 쪽이 높은지 분석합니다.`,
+                note: '좌우 도어 상단 끝선과 중앙 세로 이음부를 찾은 뒤, 높이 차이가 보이는지 분석합니다.'});
         }
         for (let i=1; i<count; i++) {
             items.push({key: `lower-${i}-${i+1}`, group: '인접 도어 하단',
                 title: `${i}–${i+1}번 도어 하단 높이`, photoKeys: [`lower-${i}-${i+1}`],
-                question: `${i}번과 ${i+1}번 도어의 하단 높이가 맞나요?`,
-                note: '수리 후 사진에서 두 도어 아랫선의 상대적인 높이를 직접 확인하세요.'});
+                question: `${i}번과 ${i+1}번 도어의 하단 중 어느 쪽이 높은지 분석합니다.`,
+                note: '좌우 도어 하단 끝선과 중앙 세로 이음부를 찾은 뒤, 높이 차이가 보이는지 분석합니다.'});
         }
         for (let i=1; i<=count; i++) {
             const keys = [];
@@ -1230,30 +1493,109 @@
         document.getElementById('alignmentInstruction').textContent = item.note;
         const list = document.getElementById('alignmentPhotos');
         list.replaceChildren();
+        const analysis = item.photoKeys.length===1 ? autoAnalyses.get(item.photoKeys[0]) : null;
         for (const shotKey of item.photoKeys) {
             const photo = afterPhotos.get(shotKey);
             if (!photo) continue;
-            const box = document.createElement('div');
-            box.className = 'alignment-shot';
-            const image = document.createElement('img');
-            image.src = photo.src;
-            image.alt = shotPlan.find(s => s.key === shotKey)?.title || '수리 후 사진';
-            const label = document.createElement('div');
-            label.className = 'alignment-shot-label';
-            label.textContent = shotPlan.find(s => s.key === shotKey)?.title || '수리 후 사진';
-            box.append(image, label);
-            list.appendChild(box);
+            const box = document.createElement('div'); box.className = 'alignment-shot';
+            const matched = analysis && item.photoKeys[0]===shotKey && analysis.kind;
+            const visual = matched ? document.createElement('canvas') : document.createElement('img');
+            if(matched) {
+                visual.className='analysis-marked-photo';
+                drawDetectedEdges(visual,photo,analysis);
+                visual.setAttribute('role','img');visual.setAttribute('aria-label','자동 검출된 도어 경계선 표시');
+            } else {
+                visual.src = photo.src;
+                visual.alt = shotPlan.find(s => s.key === shotKey)?.title || '수리 후 사진';
+            }
+            const label = document.createElement('div');label.className = 'alignment-shot-label';
+            label.textContent = matched ? '분석선 표시 · 파랑/노랑=각 경계선 · 빨강!=이상 의심' :
+                 shotPlan.find(s=>s.key===shotKey)?.title || '수리 후 사진';
+            box.append(visual,label);list.appendChild(box);
         }
         document.getElementById('alignmentImageNote').textContent =
-            item.key.startsWith('slope-') ? '이음부 근접 사진은 개별 도어 전체의 기울기를 자동 판정할 근거가 부족합니다. 현장에서 도어 좌우 높이를 별도로 점검해 주세요.'
-              : '수리 후 사진을 보여주는 화면입니다. 사진상의 수평선·단차는 카메라 각도에 따라 다르게 보일 수 있습니다.';
+            item.key.startsWith('slope-') ? '현재 이음부 근접 사진만으로 한 도어 전체의 좌·우 기울기를 판정할 근거가 없습니다. 추가로 도어 전체 상단이 보이는 구도가 필요합니다.' :
+            '표시된 파랑·노랑 선은 영상 처리로 감지한 후보 경계선입니다. 촬영 각도나 잘못 검출된 줄무늬가 단차로 오인될 수 있습니다.';
         document.getElementById('alignmentStatus').value = alignmentStatuses.get(key) || 'unreviewed';
         populateFindingDirection(item);
+        renderAutoStatus(item);
         renderFindingPanel();
         updateAlignmentProgress();
-        // 재촬영 버튼이 현재 항목의 첫 사진을 재촬영하도록 선택을 동기화합니다.
         const photoKey = item.photoKeys[0];
         if (photoKey && shotPlan.some(shot => shot.key === photoKey)) currentReviewKey = photoKey;
+    }
+
+    function renderAutoStatus(item) {
+        const panel=document.getElementById('autoAnalysisStatus');
+        const result = autoAnalyses.get(item.key);
+        const guide=document.getElementById('autoGuideBtn');
+        panel.className='auto-status';
+        guide.hidden=true;
+        if(item.key.startsWith('slope-')) {
+            panel.classList.add('uncertain');
+            panel.textContent='자동 분석 불가 · 개별 도어 전체의 양끝을 같은 사진에서 확인할 수 없습니다. 현재 촬영 구도만으로 기울기를 판단하지 않습니다.';
+        } else if (!result) {
+            panel.classList.add('uncertain');
+            panel.textContent='자동 분석 대기 · 해당 부위의 수리 후 사진이 필요합니다.';
+        } else if(result.state==='issue') {
+            panel.classList.add('issue');
+            const finding=getFindingDetails(item,result.side);
+            panel.textContent='⚠ 자동 이상 의심 · '+(finding?finding.message:result.reason);
+            guide.hidden=false;
+        } else if(result.state==='retake') {
+            panel.classList.add('retake');
+            panel.textContent='재촬영 권고 · '+result.reason;
+        } else if(result.state==='no-clear-difference') {
+            panel.textContent='뚜렷한 차이 미검출 · '+result.reason+' 정상 또는 합격을 확정한 것은 아닙니다.';
+        } else {
+            panel.classList.add('uncertain');
+            panel.textContent='판정 보류 · '+result.reason;
+        }
+    }
+
+    function revisitCurrentAlignment() {
+        const item=alignmentItems.find(i=>i.key===currentAlignmentKey);
+        if(!item || !item.photoKeys.length)return;
+        revisitAfterCapture(item.photoKeys[0]);
+    }
+
+    function focusAutoFinding(key) {
+        if (!alignmentItems.some(i=>i.key===key)) return;
+        switchResultMode('alignment');setAlignmentItem(key);
+        document.getElementById('alignmentPane').scrollIntoView({block:'start',behavior:'instant'});
+    }
+
+    function renderAutoOverview() {
+        const records=alignmentItems.filter(item=>!item.key.startsWith('slope-'))
+            .map(item=>({item,r:autoAnalyses.get(item.key)}));
+        const issue=records.filter(({r})=>r?.state==='issue');
+        const retake=records.filter(({r})=>r?.state==='retake');
+        const uncertain=records.filter(({r})=>!r || r.state==='uncertain');
+        const clear=records.filter(({r})=>r?.state==='no-clear-difference');
+        document.getElementById('autoOverviewSummary').textContent=
+            `높낮이 이상 의심 ${issue.length}부위 · 재촬영 권고 ${retake.length}부위 · 판정 보류 ${uncertain.length}부위 · 뚜렷한 차이 미검출 ${clear.length}부위. `+
+            `개별 도어 좌우 기울기 ${fridgeCount}개는 현재 촬영 구도만으로 자동 판정할 수 없습니다. `+
+            'mm 수치나 최종 합격/불량 판정이 아닙니다.';
+        const wrap=document.getElementById('autoOverviewFindings');wrap.replaceChildren();
+        if(issue.length){
+            for(const {item,r} of issue){
+                const btn=document.createElement('button');btn.type='button';btn.className='auto-suspect';
+                const f=getFindingDetails(item,r.side);
+                btn.textContent='⚠ '+(f?f.message:r.reason);
+                const hint=document.createElement('span');hint.textContent='탭하여 분석선과 해당 부위 조정 가이드를 확인';
+                btn.appendChild(hint);btn.addEventListener('click',()=>focusAutoFinding(item.key));wrap.appendChild(btn);
+            }
+        } else {
+            const msg=document.createElement('p');msg.className='auto-summary';
+            msg.textContent='자동 분석으로 명확하게 구분한 이상 위치가 없습니다. 경계선 검출이 실패한 부위는 재촬영 후 다시 검사해 주세요.';
+            wrap.appendChild(msg);
+        }
+        for(const {item,r} of retake){
+            const btn=document.createElement('button');btn.type='button';btn.className='auto-suspect';
+            btn.textContent='재촬영 권고 · '+item.title;
+            const hint=document.createElement('span');hint.textContent=r.reason;btn.appendChild(hint);
+            btn.addEventListener('click',()=>focusAutoFinding(item.key));wrap.appendChild(btn);
+        }
     }
 
     function saveAlignmentStatus(status) {
@@ -1332,31 +1674,46 @@
         if (side) openFindingModal();
     }
 
+    function currentFinding() {
+        const item=alignmentItems.find(i=>i.key===currentAlignmentKey);
+        if(!item)return null;
+        const workerSelected=alignmentStatuses.get(item.key)==='adjust' && alignmentDirections.has(item.key);
+        const auto=autoAnalyses.get(item.key);
+        const side=workerSelected?alignmentDirections.get(item.key):(auto?.state==='issue'?auto.side:null);
+        const details=getFindingDetails(item,side);
+        return details ? {...details,source:workerSelected?'worker':'automatic'} : null;
+    }
+
     function renderFindingPanel() {
         const adjusting = alignmentStatuses.get(currentAlignmentKey) === 'adjust';
         document.getElementById('alignmentDirectionWrap').hidden = !adjusting;
-        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
-        const direction = alignmentDirections.get(currentAlignmentKey);
-        const finding = adjusting ? getFindingDetails(item, direction) : null;
+        const finding = currentFinding();
         const panel = document.getElementById('alignmentFinding');
-        panel.hidden = !finding;
-        if (finding) document.getElementById('alignmentFindingText').textContent = finding.message;
-        const photoBoxes = document.querySelectorAll('#alignmentPhotos .alignment-shot');
-        photoBoxes.forEach(box => {
-            box.classList.remove('issue-left', 'issue-right');
-            box.removeAttribute('data-issue-label');
-            if (finding) {
-                box.classList.add(direction === 'left' ? 'issue-left' : 'issue-right');
-                box.dataset.issueLabel = `${finding.target} 확인`;
+        panel.hidden = !finding || finding.source === 'automatic';
+        if (finding) {
+            document.getElementById('alignmentFindingText').textContent = finding.message;
+            document.getElementById('alignmentFindingNotice').textContent = finding.source==='automatic' ?
+                '자동 사진 경계선 분석에서 의심된 위치입니다. 실제 수평·단차 정확도는 검증되지 않았습니다. 작업 전 설치 상태를 확인하세요.' :
+                '작업자가 직접 지정한 위치입니다. 자동 경계선 분석의 확정 판단이 아닙니다.';
+        }
+        document.querySelectorAll('#alignmentPhotos .alignment-shot').forEach(box=>{
+            box.classList.remove('issue-left','issue-right');box.removeAttribute('data-issue-label');
+            if(finding){
+                const side=alignmentStatuses.get(currentAlignmentKey)==='adjust' && alignmentDirections.get(currentAlignmentKey)
+                    ? alignmentDirections.get(currentAlignmentKey) : autoAnalyses.get(currentAlignmentKey)?.side;
+                box.classList.add(side==='left'?'issue-left':'issue-right');
+                box.dataset.issueLabel=`${finding.target} 확인`;
             }
         });
     }
 
     function openFindingModal() {
-        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
-        const finding = getFindingDetails(item, alignmentDirections.get(currentAlignmentKey));
+        const finding = currentFinding();
         if (!finding) return;
         document.getElementById('findingModalText').textContent = finding.message;
+        document.getElementById('findingModalNote').textContent = finding.source==='automatic' ?
+            '사진 경계선 자동 검출의 이상 의심입니다. 정확한 불량 판정이 아니므로 실제 상태를 확인하고 가이드를 이용하세요.' :
+            '작업자가 선택한 이상 위치입니다. 모델의 조정 방법을 먼저 확인하세요.';
         document.getElementById('findingModal').hidden = false;
         document.getElementById('findingModalGuideBtn').focus();
     }
@@ -1367,14 +1724,15 @@
 
     function openGuideForFinding() {
         const item = alignmentItems.find(record => record.key === currentAlignmentKey);
-        const finding = getFindingDetails(item, alignmentDirections.get(currentAlignmentKey));
-        if (!finding) return;
+        const finding = currentFinding();
+        if (!finding || !item) return;
         closeFindingModal();
         openManualDirect(finding.guidePart, true);
         setPartState(finding.guideState);
         guideReturnAlignmentKey = item.key;
         guideRetakeKey = item.photoKeys.find(key => afterPhotos.has(key)) || null;
-        document.getElementById('guideHeaderSub').textContent = '선택 부위 조정 가이드';
+        document.getElementById('guideHeaderSub').textContent = finding.source==='automatic' ?
+            '자동 이상 의심 · 관련 조정법' : '현장 확인 · 관련 조정법';
         document.getElementById('guideIssueContext').hidden = false;
         document.getElementById('guideIssueTarget').textContent = `조정 확인 대상 · ${finding.target}`;
         document.getElementById('guideIssueMessage').textContent = finding.message;
@@ -1411,7 +1769,7 @@
         const reviewed = alignmentItems.filter(item => alignmentStatuses.has(item.key)).length;
         const adjust = alignmentItems.filter(item => alignmentStatuses.get(item.key) === 'adjust').length;
         document.getElementById('alignmentProgress').textContent =
-            `작업자 확인 ${reviewed}/${alignmentItems.length}개 항목` + (adjust ? ` · 조정 필요로 표시한 항목 ${adjust}개` : '');
+            `현장 수동 확인 ${reviewed}/${alignmentItems.length}항목` + (adjust ? ` · 별도 조정 요청 ${adjust}항목` : '');
     }
 
     function moveAlignment(direction) {
@@ -1422,10 +1780,16 @@
 
     function showResults() {
         if (afterPhotos.size !== shotPlan.length) return;
-        document.getElementById('resultTitle').textContent = '촬영 완료 · 도어 복귀 및 정렬 확인';
+        document.getElementById('resultTitle').textContent = '촬영 완료 · 도어 정렬 자동 분석';
+        // 재촬영 시 해당 부위 데이터가 최신인지 확인하고 다른 사진 결과는 유지합니다.
+        for (const shot of shotPlan) {
+            if(!autoAnalyses.has(shot.key) && afterPhotos.has(shot.key))
+                autoAnalyses.set(shot.key, analyzeAlignmentPhoto(afterPhotos.get(shot.key),shot));
+        }
+        renderAutoOverview();
         document.getElementById('resultDetail').textContent =
             `${fridgeCount}대 · 기준 ${referenceDoor}번 도어 · 수리 전 ${beforePhotos.size}장 / 수리 후 ${afterPhotos.size}장. ` +
-            '① 수리 전후 복귀 비교와 ② 수리 후 도어 정렬 항목을 구분해 확인하세요.';
+            '경계선 자동 분석 결과를 먼저 확인한 뒤 필요하면 복귀 사진을 비교하세요.';
         const select = document.getElementById('reviewSelect');
         select.replaceChildren();
         for (const shot of shotPlan) {
@@ -1446,9 +1810,19 @@
         const key = currentReviewKey && afterPhotos.has(currentReviewKey) ? currentReviewKey : shotPlan[0].key;
         select.value = key;
         setReviewShot(key);
+        if (!currentAlignmentKey) {
+            const firstIssue=alignmentItems.find(item=>autoAnalyses.get(item.key)?.state==='issue');
+            if(firstIssue) currentAlignmentKey=firstIssue.key;
+        }
         renderAlignmentSelect();
+        const firstIssue=alignmentItems.find(item=>autoAnalyses.get(item.key)?.state==='issue' && !autoPromptShownKeys.has(item.key));
+        if(firstIssue) { resultMode='alignment'; currentAlignmentKey=firstIssue.key; setAlignmentItem(firstIssue.key); }
         switchResultMode(resultMode);
         showScreen('pass-screen');
+        if(firstIssue) {
+            autoPromptShownKeys.add(firstIssue.key);
+            openFindingModal();
+        }
     }
 
     function setReviewShot(key) {
