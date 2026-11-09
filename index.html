@@ -217,6 +217,37 @@
         .alignment-nav .sub-action-btn { font-size: 12px; min-width: 0; padding: 12px 8px; }
         .camera-step-card { background: rgba(5, 19, 36, .84); }
         @media (max-width: 370px) { .result-tab { font-size: 11.5px; } .alignment-shot img { height: 160px; } }
+
+        /* 이상 위치를 작업자가 지정한 뒤 정확한 도어 번호로 가이드를 연결 */
+        #guide-screen .header-actions { gap: 8px; flex-shrink: 0; }
+        #guide-screen .header-actions .header-btn { white-space: nowrap; font-size: 13px; }
+        #guide-screen .brand-box { min-width: 0; }
+        #guide-screen .brand-sub { max-width: 125px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .finding-direction { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+        .finding-direction[hidden], .finding-panel[hidden], .finding-modal[hidden],
+        .guide-target[hidden], #guideShotPickWrap[hidden] { display: none !important; }
+        .finding-panel { border: 1.5px solid #e8b0a7; background: #fff8f7; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+        .finding-title { display: flex; align-items: center; gap: 7px; color: #a82c20; font-size: 14px; font-weight: 900; }
+        .finding-message { font-size: 15px; line-height: 1.65; font-weight: 850; color: #5a2923; overflow-wrap: anywhere; }
+        .finding-notice { color: #775a4d; font-size: 12px; line-height: 1.55; }
+        .finding-mini { font-size: 12px; color: #365b7b; font-weight: 750; }
+        .finding-modal { position: absolute; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(7,20,36,.62); padding: 20px; }
+        .finding-dialog { background: white; color: #27384a; width: 100%; max-width: 390px; border-radius: 16px; padding: 21px 18px; box-shadow: 0 16px 35px rgba(0,0,0,.2); display: flex; flex-direction: column; gap: 13px; }
+        .finding-dialog h2 { font-size: 19px; color: #b03026; }
+        .finding-dialog p { font-size: 14px; font-weight: 750; line-height: 1.6; }
+        .finding-dialog .sub-action-btn { flex: 1; }
+        .guide-target { background: #eef6ff; border: 1px solid #c8def4; border-radius: 12px; padding: 13px; display: flex; flex-direction: column; gap: 8px; }
+        .guide-target h4 { color: #155f9f; font-size: 15px; }
+        .guide-target p { font-size: 12px; color: #3f5a72; line-height: 1.6; }
+        .guide-retake-btn { position: sticky; bottom: 0; flex-shrink: 0; z-index: 3; box-shadow: 0 -4px 20px rgba(255,255,255,.9), 0 4px 12px rgba(0,118,255,.18); margin-top: 10px !important; }
+        .guide-retake-btn[hidden] { display: none !important; }
+        #alignmentPhotos .alignment-shot { position: relative; }
+        #alignmentPhotos .alignment-shot.issue-left::before, #alignmentPhotos .alignment-shot.issue-right::before {
+            content: attr(data-issue-label); position: absolute; top: 9px; max-width: 90%; padding: 5px 8px; font-size: 11px; font-weight: 900; border-radius: 6px;
+            background: rgba(186,34,29,.94); color: white; box-shadow: 0 1px 6px rgba(0,0,0,.3);
+        }
+        #alignmentPhotos .alignment-shot.issue-left::before { left: 8px; }
+        #alignmentPhotos .alignment-shot.issue-right::before { right: 8px; }
     </style>
 </head>
 <body>
@@ -280,7 +311,7 @@
                 <button type="button" onclick="returnHome()">처음으로</button>
             </div>
             <div class="camera-overlay">
-                <div class="level-bar"><div id="levelDot1" class="level-dot"></div><span id="levelText1">기울기 센서 대기 중</span></div>
+                <div class="level-bar"><span>도어·가구장 경계가 보이도록 촬영하세요</span></div>
                 <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
             </div>
             <div class="camera-step-card">
@@ -402,6 +433,11 @@
         <div class="guide-container">
             <p class="ready-desc">아래 GIF는 빌트인 모델 조정 예시입니다. 다른 모델은 해당 제품 설명서를 확인하세요.</p>
             <div class="status-badge" id="failReasonText" style="display:none;"></div>
+            <div id="guideIssueContext" class="guide-target" hidden>
+                <h4 id="guideIssueTarget">조정 대상</h4>
+                <p id="guideIssueMessage"></p>
+                <p>아래 매뉴얼은 관련 조정 방법의 예시입니다. 실제 원인을 점검하고 해당 모델의 작업 기준을 우선 확인하세요.</p>
+            </div>
 
             <!-- Interactive Hotspot Fridge Box -->
             <div class="interactive-fridge-container">
@@ -454,7 +490,11 @@
                 </div>
             </div>
 
-            <button id="guideRetryBtn" class="main-action-btn" style="margin-top:auto;display:none;" onclick="revisitAfterCapture()">조정 후 수리 후 사진 다시 촬영</button>
+            <div id="guideShotPickWrap" hidden>
+                <label class="fridge-count-title" for="guideShotPick">재촬영할 부위 선택</label>
+                <select id="guideShotPick" class="review-selector" onchange="setGuideRetakeShot(this.value)"></select>
+            </div>
+            <button id="guideRetryBtn" class="main-action-btn guide-retake-btn" hidden onclick="retryAfterGuide()">조정 완료 · 이 부위만 다시 촬영하기</button>
         </div>
     </div>
 
@@ -492,13 +532,23 @@
                 <p id="alignmentInstruction" class="compact-info"></p>
                 <div id="alignmentPhotos" class="alignment-photos"></div>
                 <p id="alignmentImageNote" class="note-attention"></p>
-                <label class="fridge-count-title" for="alignmentStatus">현장 확인 결과</label>
+                <label class="fridge-count-title" for="alignmentStatus">현장 확인 결과 · 작업자 선택</label>
                 <select id="alignmentStatus" class="review-selector" onchange="saveAlignmentStatus(this.value)">
                     <option value="unreviewed">미확인</option>
                     <option value="good">정렬 양호 (작업자 확인)</option>
                     <option value="adjust">조정 필요 (작업자 확인)</option>
                     <option value="unclear">사진만으로 판별 어려움</option>
                 </select>
+                <div id="alignmentDirectionWrap" class="finding-direction" hidden>
+                    <label class="fridge-count-title" for="alignmentDirection">어느 부분이 높거나 간격이 좁나요?</label>
+                    <select id="alignmentDirection" class="review-selector" onchange="saveFindingDirection(this.value)"></select>
+                </div>
+                <div id="alignmentFinding" class="finding-panel" hidden aria-live="polite">
+                    <div class="finding-title">⚠ 조정 위치 확인</div>
+                    <p id="alignmentFindingText" class="finding-message"></p>
+                    <p class="finding-notice">이 위치는 작업자가 선택한 현장 관찰 결과입니다. 자동 분석으로 확정한 결과가 아닙니다. 가구장 상태·촬영 각도·설치 상태 등을 먼저 확인하세요.</p>
+                    <button type="button" class="main-action-btn" onclick="openGuideForFinding()">해당 부위 조정 가이드 보기</button>
+                </div>
                 <p id="alignmentProgress" class="review-progress" aria-live="polite"></p>
                 <div class="alignment-nav">
                     <button type="button" class="sub-action-btn" onclick="moveAlignment(-1)">← 이전 항목</button>
@@ -525,6 +575,15 @@
             <button class="btn-half btn-confirm" onclick="confirmExit()">종료</button>
         </div>
     </div>
+    <div id="findingModal" class="finding-modal" hidden>
+        <div class="finding-dialog" role="dialog" aria-modal="true" aria-labelledby="findingModalTitle" aria-describedby="findingModalText">
+            <h2 id="findingModalTitle">조정 위치를 확인해 주세요</h2>
+            <p id="findingModalText"></p>
+            <p class="finding-notice">사진만으로 조정 원인이 확정된 것은 아닙니다. 부위와 모델을 확인하고 조정 가이드를 참고하세요.</p>
+            <button id="findingModalGuideBtn" class="main-action-btn" onclick="openGuideForFinding()">해당 도어 조정 가이드 보기</button>
+            <button type="button" class="sub-action-btn" onclick="closeFindingModal()">결과 화면에서 계속 확인</button>
+        </div>
+    </div>
 </div>
 
 <canvas id="calcCanvas" style="display:none;"></canvas>
@@ -542,7 +601,10 @@
     let resultMode = 'restore';
     let alignmentItems = [];
     const alignmentStatuses = new Map();
+    const alignmentDirections = new Map(); // 작업자가 선택한 좌측/우측 위치 (자동 판정 아님)
     let currentAlignmentKey = null;
+    let guideRetakeKey = null;
+    let guideReturnAlignmentKey = null;
     let activeCameraStream = null;
     let cameraRequest = 0;
     let previousScreen = 'ready-screen';
@@ -681,10 +743,12 @@
 
     // Splash Screen
     setTimeout(() => {
-        showScreen('ready-screen');
+        // 사용자가 빠르게 다음 화면으로 이동한 경우 진행 중인 화면을 덮어쓰지 않습니다.
+        if (document.getElementById('splash-screen').classList.contains('active')) showScreen('ready-screen');
     }, 2500);
 
     function showScreen(screenId) {
+        if (screenId !== 'pass-screen') closeFindingModal();
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(screenId).classList.add('active');
         history.pushState({ screen: screenId }, '');
@@ -693,11 +757,13 @@
     function openManualDirect(part = 'leg_right', showRetry = false) {
         const activeEl = document.querySelector('.screen.active');
         if (activeEl) previousScreen = activeEl.id;
-        
+        guideRetakeKey = null;
+        guideReturnAlignmentKey = null;
+        document.getElementById('guideIssueContext').hidden = true;
+        document.getElementById('guideShotPickWrap').hidden = true;
+        document.getElementById('guideRetryBtn').hidden = true;
         document.getElementById('failReasonText').style.display = 'none';
         document.getElementById('guideHeaderSub').innerText = '수평/단차 터치 가이드';
-        document.getElementById('guideRetryBtn').style.display = showRetry ? 'block' : 'none';
-        
         selectSpot(part);
         showScreen('guide-screen');
     }
@@ -707,6 +773,10 @@
     }
 
     window.addEventListener('popstate', function(e) {
+        if (!document.getElementById('findingModal').hidden) {
+            closeFindingModal();
+            return;
+        }
         const exitScreen = document.getElementById('exit-screen');
         const guideScreen = document.getElementById('guide-screen');
 
@@ -726,22 +796,6 @@
         openExitScreen();
     });
 
-    // Device Tilt Listener
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', function(e) {
-            if (!Number.isFinite(e.gamma)) return;
-            const currentTiltAngle = Math.round(e.gamma * 10) / 10;
-            const isLevel = Math.abs(currentTiltAngle) <= 1.0;
-
-            const dot1 = document.getElementById('levelDot1');
-            const text1 = document.getElementById('levelText1');
-            if (dot1 && text1) {
-                dot1.className = isLevel ? 'level-dot' : 'level-dot tilt';
-                text1.innerText = `휴대폰 기울기: ${currentTiltAngle > 0 ? '+' : ''}${currentTiltAngle}° ${isLevel ? '(촬영 자세 양호)' : '(기울어짐)'}`;
-            }
-
-        });
-    }
 
     function chooseCount(count) {
         if (!Number.isInteger(count) || count < 2 || count > 6) return;
@@ -756,6 +810,10 @@
         currentAlignmentKey = null;
         alignmentItems = buildAlignmentItems(count, referenceDoor);
         alignmentStatuses.clear();
+        alignmentDirections.clear();
+        closeFindingModal();
+        guideRetakeKey = null;
+        guideReturnAlignmentKey = null;
         revisitingShot = false;
         document.querySelectorAll('.fridge-count-btn').forEach(button => {
             const selected = Number(button.dataset.count) === count;
@@ -839,6 +897,10 @@
         currentAlignmentKey = null;
         alignmentItems = [];
         alignmentStatuses.clear();
+        alignmentDirections.clear();
+        closeFindingModal();
+        guideRetakeKey = null;
+        guideReturnAlignmentKey = null;
         revisitingShot = false;
         resultMode = 'restore';
         document.querySelectorAll('.fridge-count-btn').forEach(button => {
@@ -1074,7 +1136,10 @@
         if (step === 2) {
             // 새 사진을 찍었다면 기존 사진에 대해 내려진 수동 확인 판단은 유지할 수 없습니다.
             for (const item of alignmentItems) {
-                if (item.photoKeys.includes(key)) alignmentStatuses.delete(item.key);
+                if (item.photoKeys.includes(key)) {
+                    alignmentStatuses.delete(item.key);
+                    alignmentDirections.delete(item.key);
+                }
             }
         }
         if (step === 2 && revisitingShot) {
@@ -1183,6 +1248,8 @@
             item.key.startsWith('slope-') ? '이음부 근접 사진은 개별 도어 전체의 기울기를 자동 판정할 근거가 부족합니다. 현장에서 도어 좌우 높이를 별도로 점검해 주세요.'
               : '수리 후 사진을 보여주는 화면입니다. 사진상의 수평선·단차는 카메라 각도에 따라 다르게 보일 수 있습니다.';
         document.getElementById('alignmentStatus').value = alignmentStatuses.get(key) || 'unreviewed';
+        populateFindingDirection(item);
+        renderFindingPanel();
         updateAlignmentProgress();
         // 재촬영 버튼이 현재 항목의 첫 사진을 재촬영하도록 선택을 동기화합니다.
         const photoKey = item.photoKeys[0];
@@ -1194,7 +1261,150 @@
         if (!allowed.includes(status) || !currentAlignmentKey) return;
         if (status === 'unreviewed') alignmentStatuses.delete(currentAlignmentKey);
         else alignmentStatuses.set(currentAlignmentKey, status);
+        if (status !== 'adjust') alignmentDirections.delete(currentAlignmentKey);
+        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
+        if (item) populateFindingDirection(item);
+        renderFindingPanel();
         updateAlignmentProgress();
+    }
+
+    // 실제 이상 방향은 작업자가 고른다. 검증되지 않은 영상 인식으로 이상 부위를 자동 확정하지 않는다.
+    function populateFindingDirection(item) {
+        const select = document.getElementById('alignmentDirection');
+        select.replaceChildren();
+        const options = [{value:'', label:'높은 위치 / 좁은 간격을 선택하세요'}];
+        if (item.key.startsWith('top-')) {
+            options.push({value:'left', label:'좌측 간격이 좁음 (좌측이 상대적으로 높음)'},
+                         {value:'right', label:'우측 간격이 좁음 (우측이 상대적으로 높음)'});
+        } else if (item.key.startsWith('slope-')) {
+            options.push({value:'left', label:'도어 자체의 왼쪽 끝이 높음'},
+                         {value:'right', label:'도어 자체의 오른쪽 끝이 높음'});
+        } else {
+            const matches = item.key.match(/^(?:upper|lower)-(\d+)-(\d+)$/);
+            if (matches) options.push(
+                {value:'left', label:`왼쪽 ${matches[1]}번 도어가 높음`},
+                {value:'right', label:`오른쪽 ${matches[2]}번 도어가 높음`});
+        }
+        for (const itemOption of options) {
+            const option = document.createElement('option');
+            option.value = itemOption.value;
+            option.textContent = itemOption.label;
+            select.appendChild(option);
+        }
+        select.value = alignmentDirections.get(item.key) || '';
+    }
+
+    function getFindingDetails(item, side) {
+        if (!item || !['left','right'].includes(side)) return null;
+        const sideKorean = side === 'left' ? '좌측' : '우측';
+        if (item.key.startsWith('top-')) {
+            return {
+                target: `${referenceDoor}번 기준 냉장고 ${sideKorean} 상단`,
+                message: `기준 ${referenceDoor}번 도어의 ${sideKorean} 상부장 간격이 반대쪽보다 좁습니다. 냉장고 ${sideKorean}이 상대적으로 높게 보입니다. 가이드에 따라 조정 위치를 확인해 주세요.`,
+                guidePart: `leg_${side}`, guideState: 'high'
+            };
+        }
+        if (item.key.startsWith('slope-')) {
+            const door = Number(item.key.split('-')[1]);
+            return {
+                target: `${door}번 도어 ${sideKorean} 끝`,
+                message: `${door}번 도어의 ${sideKorean} 끝이 반대쪽보다 높게 확인되었습니다. 도어 자체의 기울기인지 설치 상태 문제인지 먼저 확인하고 조정 가이드를 참고해 주세요.`,
+                guidePart: `door_gap_${side}`, guideState: 'high'
+            };
+        }
+        const matches = item.key.match(/^(upper|lower)-(\d+)-(\d+)$/);
+        if (!matches) return null;
+        const door = side === 'left' ? Number(matches[2]) : Number(matches[3]);
+        const other = side === 'left' ? Number(matches[3]) : Number(matches[2]);
+        const end = matches[1] === 'upper' ? '상단' : '하단';
+        return {
+            target: `${sideKorean} ${door}번 도어 ${end}`,
+            message: `냉장고 ${sideKorean} ${door}번째 도어의 ${end}이 ${other}번 도어보다 높게 보입니다. 가이드에서 ${door}번 도어 조정 방법을 확인해 주세요.`,
+            guidePart: `door_gap_${side}`, guideState: 'high'
+        };
+    }
+
+    function saveFindingDirection(side) {
+        if (!currentAlignmentKey || !['left','right',''].includes(side)) return;
+        if (side) alignmentDirections.set(currentAlignmentKey, side);
+        else alignmentDirections.delete(currentAlignmentKey);
+        renderFindingPanel();
+        if (side) openFindingModal();
+    }
+
+    function renderFindingPanel() {
+        const adjusting = alignmentStatuses.get(currentAlignmentKey) === 'adjust';
+        document.getElementById('alignmentDirectionWrap').hidden = !adjusting;
+        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
+        const direction = alignmentDirections.get(currentAlignmentKey);
+        const finding = adjusting ? getFindingDetails(item, direction) : null;
+        const panel = document.getElementById('alignmentFinding');
+        panel.hidden = !finding;
+        if (finding) document.getElementById('alignmentFindingText').textContent = finding.message;
+        const photoBoxes = document.querySelectorAll('#alignmentPhotos .alignment-shot');
+        photoBoxes.forEach(box => {
+            box.classList.remove('issue-left', 'issue-right');
+            box.removeAttribute('data-issue-label');
+            if (finding) {
+                box.classList.add(direction === 'left' ? 'issue-left' : 'issue-right');
+                box.dataset.issueLabel = `${finding.target} 확인`;
+            }
+        });
+    }
+
+    function openFindingModal() {
+        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
+        const finding = getFindingDetails(item, alignmentDirections.get(currentAlignmentKey));
+        if (!finding) return;
+        document.getElementById('findingModalText').textContent = finding.message;
+        document.getElementById('findingModal').hidden = false;
+        document.getElementById('findingModalGuideBtn').focus();
+    }
+
+    function closeFindingModal() {
+        document.getElementById('findingModal').hidden = true;
+    }
+
+    function openGuideForFinding() {
+        const item = alignmentItems.find(record => record.key === currentAlignmentKey);
+        const finding = getFindingDetails(item, alignmentDirections.get(currentAlignmentKey));
+        if (!finding) return;
+        closeFindingModal();
+        openManualDirect(finding.guidePart, true);
+        setPartState(finding.guideState);
+        guideReturnAlignmentKey = item.key;
+        guideRetakeKey = item.photoKeys.find(key => afterPhotos.has(key)) || null;
+        document.getElementById('guideHeaderSub').textContent = '선택 부위 조정 가이드';
+        document.getElementById('guideIssueContext').hidden = false;
+        document.getElementById('guideIssueTarget').textContent = `조정 확인 대상 · ${finding.target}`;
+        document.getElementById('guideIssueMessage').textContent = finding.message;
+        const selectWrap = document.getElementById('guideShotPickWrap');
+        const select = document.getElementById('guideShotPick');
+        select.replaceChildren();
+        for (const key of item.photoKeys) {
+            if (!afterPhotos.has(key)) continue;
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = shotPlan.find(s => s.key === key)?.title || key;
+            select.appendChild(option);
+        }
+        selectWrap.hidden = select.options.length <= 1;
+        if (guideRetakeKey) select.value = guideRetakeKey;
+        document.getElementById('guideRetryBtn').hidden = !guideRetakeKey;
+    }
+
+    function setGuideRetakeShot(key) {
+        const item = alignmentItems.find(record => record.key === guideReturnAlignmentKey);
+        if (item && item.photoKeys.includes(key) && afterPhotos.has(key)) guideRetakeKey = key;
+    }
+
+    function retryAfterGuide() {
+        if (!guideRetakeKey || !afterPhotos.has(guideRetakeKey)) return;
+        const targetKey = guideRetakeKey;
+        if (guideReturnAlignmentKey) currentAlignmentKey = guideReturnAlignmentKey;
+        resultMode = 'alignment';
+        document.getElementById('guideRetryBtn').hidden = true;
+        revisitAfterCapture(targetKey);
     }
 
     function updateAlignmentProgress() {
@@ -1253,10 +1463,13 @@
         document.getElementById('resultAfterPhoto').style.opacity = .5;
     }
 
-    function revisitAfterCapture() {
+    function revisitAfterCapture(explicitKey = null) {
         if (!shotPlan.length || beforePhotos.size !== shotPlan.length) return;
-        const index = shotPlan.findIndex(shot => shot.key === currentReviewKey);
+        const targetKey = typeof explicitKey === 'string' && shotPlan.some(s => s.key === explicitKey)
+            ? explicitKey : currentReviewKey;
+        const index = shotPlan.findIndex(shot => shot.key === targetKey);
         shotIndex = index < 0 ? 0 : index;
+        currentReviewKey = shotPlan[shotIndex].key;
         revisitingShot = true;
         startCamera(2);
     }
