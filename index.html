@@ -319,6 +319,69 @@ body, .phone-frame {height:100vh;height:100dvh;}
 @media(max-height:740px) { .camera-step-card {top:105px;} .camera-figure-panel svg {height:60px;} .camera-previous {bottom:145px;} }
 @media(max-height:620px) { .camera-step-desc {display:none;} .camera-step-card {top:94px;} .camera-figure-panel svg{height:50px;} }
 
+
+/* APK 1.1.2-style shooting experience: external instruction board + numbered schematic + dashed live outlines */
+#camera1-screen,#camera2-screen{overflow:hidden;min-height:0;background:#fff;}
+.apk-camera-header{flex-shrink:0;min-height:52px;padding:10px 14px;}
+.apk-camera-header .header-actions{gap:12px;}
+.apk-camera-header .header-btn{font-size:14px;white-space:nowrap;}
+.apk-camera-header .brand-sub{font-size:12px;white-space:nowrap;}
+.capture-head{background:#fff;flex-shrink:0;max-height:min(42vh,350px);overflow-y:auto;overscroll-behavior:contain;}
+.capture-head .camera-step-card{position:static;inset:auto;z-index:auto;pointer-events:auto;background:#fff;color:#1c2329;border:0;border-radius:0;padding:12px 15px 9px;box-shadow:none;}
+.capture-head .camera-step-title{font-size:18px!important;line-height:1.35;color:#14191f;font-weight:900;margin:2px 0 6px;}
+.capture-head .camera-step-count{font-size:12px;color:#1372c4;font-weight:900;}
+.capture-head .camera-step-desc{font-size:12px!important;line-height:1.5;color:#4e5964;margin:5px 0 0;max-height:44px;overflow-y:auto;}
+.capture-head .camera-figure-toggle{border:1.5px solid #c9d3de;background:#fff;color:#145d96;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:900;}
+.capture-head .camera-figure-panel{background:#fff;color:#27384d;border:0;border-radius:0;padding:3px 0 0;margin-top:4px;}
+.capture-head .camera-figure-panel svg,.capture-head .camera-figure-panel .apk-shot-figure{height:auto;width:100%;max-width:490px;max-height:150px;display:block;margin:0 auto;}
+.capture-head .camera-figure-panel p{font-size:12px;line-height:1.45;color:#33485e;white-space:normal;}
+#camera1-screen .camera-container,#camera2-screen .camera-container{flex:1;min-height:195px;overflow:hidden;position:relative;}
+#camera1-screen .camera-overlay,#camera2-screen .camera-overlay{padding:0;}
+#camera1-screen .camera-overlay .grid-line-h,#camera2-screen .camera-overlay .grid-line-h,
+#camera1-screen .camera-overlay .grid-line-v,#camera2-screen .camera-overlay .grid-line-v{display:none;}
+.apk-live-guide{position:absolute;z-index:5;inset:0;width:100%;height:100%;pointer-events:none;}
+.apk-live-guide .silhouette{fill:rgba(255,255,255,.06);stroke:rgba(255,255,255,.92);stroke-width:1.35;stroke-dasharray:6 5;vector-effect:non-scaling-stroke;}
+.apk-live-guide .band-horizontal{fill:rgba(255,205,45,.15);}
+.apk-live-guide .band-vertical{fill:rgba(255,205,45,.10);}
+.apk-live-guide .guide-center{stroke:#ffd539;stroke-width:1.45;stroke-dasharray:5 3;vector-effect:non-scaling-stroke;}
+.apk-guide-labels{position:absolute;inset:0;z-index:6;pointer-events:none;}
+.apk-guide-labels span{position:absolute;transform:translate(-50%,-50%);padding:3px 8px;border-radius:5px;color:#fff;background:rgba(0,0,0,.65);font-size:12px;font-weight:800;white-space:nowrap;}
+.apk-guide-chips{position:absolute;top:47px;left:10px;right:10px;z-index:7;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none;}
+.apk-guide-chips span{color:#fff;background:rgba(14,27,43,.7);padding:3px 8px;border-radius:99px;font-size:11px;font-weight:750;}
+#camera1-screen .auto-shot-toggle,#camera2-screen .auto-shot-toggle{position:absolute;z-index:18;top:8px;right:10px;left:auto;border-radius:8px;padding:7px 9px;background:#222b;color:#fff;}
+#camera1-screen .camera-previous,#camera2-screen .camera-previous{position:absolute;z-index:18;top:8px;bottom:auto;left:10px;background:#222b;color:#fff;}
+#camera1-screen .camera-overlay .level-bar,#camera2-screen .camera-overlay .level-bar{
+ position:absolute;left:50%;top:auto;bottom:193px;max-width:92%;transform:translateX(-50%);padding:7px 10px;font-size:12px;line-height:1.35;text-align:center;
+}
+#camera1-screen .camera-extra-hint,#camera2-screen .camera-extra-hint{bottom:172px;left:50%;transform:translateX(-50%);white-space:nowrap;max-width:98%;text-align:center;font-size:10px;}
+#camera1-screen .camera-zoom,#camera2-screen .camera-zoom{bottom:85px;left:10px;right:10px;padding:7px 10px;}
+#camera2-screen .slider-box{bottom:136px!important;left:10px;right:auto;width:calc(100% - 20px);padding:6px 12px;}
+#camera2-screen .camera-extra-hint{bottom:170px;}
+#camera2-screen .camera-overlay .level-bar{bottom:200px;}
+#camera1-screen .shutter-bar,#camera2-screen .shutter-bar{height:76px;}
+@media(max-height:720px){
+ .capture-head{max-height:35vh;}
+ .capture-head .camera-figure-panel .apk-shot-figure{max-height:110px;}
+ .capture-head .camera-step-desc{max-height:28px;}
+ .apk-guide-chips{top:44px;}
+}
+@media(max-width:365px){.capture-head .camera-step-title{font-size:16px!important;}.apk-camera-header .brand-sub{font-size:10px;}}
+
+
+/* Restore APK 1.1.2 separation: unobstructed live preview; sliders and shutter BELOW preview. */
+.apk-capture-tools{flex-shrink:0;display:grid;justify-items:center;gap:5px;padding:8px 14px max(10px,env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e3e8ed;}
+.apk-capture-tools .camera-zoom{position:static!important;inset:auto!important;display:flex;width:100%;max-width:460px;background:#fff;border:none;color:#213345;border-radius:0;padding:2px 4px;box-shadow:none;}
+.apk-capture-tools .camera-zoom label,.apk-capture-tools .camera-zoom output{color:#205b96;font-size:12px;font-weight:800;}
+.apk-capture-tools .camera-zoom input{accent-color:#0076ff;}
+.apk-capture-tools .slider-box{position:static!important;inset:auto!important;width:100%!important;max-width:460px;background:#f1f6fc;border-radius:9px;padding:6px 10px;margin:0;}
+.apk-capture-tools .slider-box span{color:#346183;}
+.apk-capture-tools .camera-extra-hint{position:static!important;inset:auto!important;transform:none!important;display:block;background:none;color:#415367;border-radius:0;padding:0;max-width:100%;white-space:normal;font-size:11px;line-height:1.3;text-align:center;}
+.apk-capture-tools .shutter-bar{position:static!important;inset:auto!important;display:flex;align-items:center;justify-content:center;width:100%;height:64px;background:transparent;}
+.apk-capture-tools .shutter-btn{width:57px;height:57px;flex-shrink:0;}
+#camera1-screen .camera-overlay .level-bar,#camera2-screen .camera-overlay .level-bar{bottom:13px;max-width:92%;}
+#camera1-screen .camera-container,#camera2-screen .camera-container{min-height:185px;}
+@media(max-height:720px){.apk-capture-tools{padding-top:4px;padding-bottom:4px;gap:1px;}.apk-capture-tools .shutter-bar{height:57px;}}
+
     </style>
 </head>
 <body>
@@ -376,18 +439,11 @@ body, .phone-frame {height:100vh;height:100dvh;}
 
     <!-- 3. 수리 전 부위별 근접 촬영 -->
     <div id="camera1-screen" class="screen">
-        <div class="camera-container">
-            <video id="videoFeed" playsinline autoplay muted></video>
-            <div class="camera-back camera-nav">
-                <button type="button" onclick="leaveCamera(1)">뒤로</button>
-                <button type="button" onclick="returnHome()">처음으로</button>
-            </div>
-            <div class="camera-guides top" id="beforeAnalysisGuides" aria-hidden="true"><span class="line upper"></span><span class="line lower"></span><span class="line vertical"></span></div>
-            <label class="camera-back auto-shot-toggle"><input id="beforeAutoShot" type="checkbox" checked> 자동 촬영</label>
-            <div class="camera-overlay">
-                <div class="level-bar auto-hint"><span id="beforeCameraHint" role="status">도어 경계 인식 중 · 수동 촬영 가능</span></div>
-                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
-            </div>
+        <div class="app-header apk-camera-header">
+            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub" id="beforeHeaderProgress">수리 전</div></div>
+            <div class="header-actions"><button type="button" class="header-btn" onclick="leaveCamera(1)">뒤로</button><button type="button" class="header-btn" onclick="returnHome()">처음으로</button></div>
+        </div>
+        <div class="capture-head">
             <div class="camera-step-card">
                 <div id="beforeStepCount" class="camera-step-count"></div>
                 <div id="beforeStepTitle" class="camera-step-title"></div>
@@ -395,7 +451,20 @@ body, .phone-frame {height:100vh;height:100dvh;}
                 <button id="beforeFigureToggle" class="camera-figure-toggle" type="button" onclick="toggleShotFigure('before')" aria-expanded="false">촬영 위치 그림 보기 ▼</button>
                 <div id="beforeFigurePanel" class="camera-figure-panel" hidden></div>
             </div>
+        </div>
+        <div class="camera-container">
+            <video id="videoFeed" playsinline autoplay muted></video>
+            <svg class="apk-live-guide" id="beforeLiveGuide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="apk-guide-labels" id="beforeGuideLabels" aria-hidden="true"></div>
+            <div class="apk-guide-chips" id="beforeGuideChips" aria-hidden="true"></div>
+            <label class="camera-back auto-shot-toggle"><input id="beforeAutoShot" type="checkbox" checked> 자동 촬영</label>
+            <div class="camera-overlay">
+                <div class="level-bar auto-hint"><span id="beforeCameraHint" role="status">도어 경계 인식 중 · 수동 촬영 가능</span></div>
+                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
+            </div>
             <button id="beforePrevious" class="camera-previous" type="button" onclick="previousShot(1)">← 이전 부위</button>
+        </div>
+        <div class="apk-capture-tools" id="beforeCaptureTools">
             <div class="camera-zoom" id="beforeZoomControl"><label for="beforeZoomRange">확대</label><input id="beforeZoomRange" type="range" min="1" max="3" step="0.1" value="1" oninput="setCaptureZoom('before', this.value)"><output id="beforeZoomValue">1.0×</output></div>
             <span class="camera-extra-hint">화면을 눌러 초점 · 확대 후 동일 배율 유지</span>
             <div class="shutter-bar"><button class="shutter-btn" onclick="takeBeforePhoto()" aria-label="수리 전 현재 부위 촬영"><div class="shutter-inner"></div></button></div>
@@ -453,19 +522,11 @@ body, .phone-frame {height:100vh;height:100dvh;}
 
     <!-- 5. 수리 후 부위별 고스트 오버레이 재촬영 -->
     <div id="camera2-screen" class="screen">
-        <div class="camera-container">
-            <video id="videoFeed2" playsinline autoplay muted></video>
-            <img id="ghostImg" class="ghost-overlay" alt="현재 부위의 수리 전 기준 사진">
-            <div class="camera-guides top" id="afterAnalysisGuides" aria-hidden="true"><span class="line upper"></span><span class="line lower"></span><span class="line vertical"></span></div>
-            <div class="camera-back camera-nav">
-                <button type="button" onclick="leaveCamera(2)">뒤로</button>
-                <button type="button" onclick="returnHome()">처음으로</button>
-            </div>
-            <label class="camera-back auto-shot-toggle"><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
-            <div class="camera-overlay">
-                <div class="level-bar auto-hint"><span id="afterCameraHint" role="status" aria-live="polite">기준선 찾는 중</span><span id="autoHoldProgress" class="auto-hold-progress" aria-hidden="true"></span></div>
-                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
-            </div>
+        <div class="app-header apk-camera-header">
+            <div class="brand-box"><div class="brand-title">DDak-Fit</div><div class="brand-sub" id="afterHeaderProgress">수리 후</div></div>
+            <div class="header-actions"><button type="button" class="header-btn" onclick="leaveCamera(2)">뒤로</button><button type="button" class="header-btn" onclick="returnHome()">처음으로</button></div>
+        </div>
+        <div class="capture-head">
             <div class="camera-step-card">
                 <div id="afterStepCount" class="camera-step-count"></div>
                 <div id="afterStepTitle" class="camera-step-title"></div>
@@ -473,7 +534,21 @@ body, .phone-frame {height:100vh;height:100dvh;}
                 <button id="afterFigureToggle" class="camera-figure-toggle" type="button" onclick="toggleShotFigure('after')" aria-expanded="false">촬영 위치 그림 보기 ▼</button>
                 <div id="afterFigurePanel" class="camera-figure-panel" hidden></div>
             </div>
+        </div>
+        <div class="camera-container">
+            <video id="videoFeed2" playsinline autoplay muted></video>
+            <img id="ghostImg" class="ghost-overlay" alt="현재 부위의 수리 전 기준 사진">
+            <svg class="apk-live-guide" id="afterLiveGuide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div class="apk-guide-labels" id="afterGuideLabels" aria-hidden="true"></div>
+            <div class="apk-guide-chips" id="afterGuideChips" aria-hidden="true"></div>
+            <label class="camera-back auto-shot-toggle"><input id="autoShot" type="checkbox" checked> 자동 촬영</label>
+            <div class="camera-overlay">
+                <div class="level-bar auto-hint"><span id="afterCameraHint" role="status" aria-live="polite">기준선 찾는 중</span><span id="autoHoldProgress" class="auto-hold-progress" aria-hidden="true"></span></div>
+                <div class="grid-line-h mid"></div><div class="grid-line-v center"></div>
+            </div>
             <button id="afterPrevious" class="camera-previous" type="button" onclick="previousShot(2)">← 이전 부위</button>
+        </div>
+        <div class="apk-capture-tools" id="afterCaptureTools">
             <div class="slider-box" style="bottom:201px">
                 <span>고스트</span><input type="range" id="ghostOpacity" min="10" max="90" value="42" oninput="changeGhostOpacity(this.value)" aria-label="고스트 사진 투명도">
             </div>
@@ -1003,13 +1078,15 @@ body, .phone-frame {height:100vh;height:100dvh;}
         const prefix = before ? 'before' : 'after';
         document.getElementById(prefix + 'StepCount').textContent =
             `${before ? '수리 전' : '수리 후'} · ${shotIndex+1}/${shotPlan.length} · ${shot.group}`;
+        document.getElementById(prefix + 'HeaderProgress').textContent =
+            `${before ? '수리 전' : '수리 후'} · ${shotIndex+1}/${shotPlan.length}`;
+        setupAPKShotGuide(shot, prefix);
         document.getElementById(prefix + 'StepTitle').textContent = shot.title;
+        const shotInstruction = shot.group === '기준 간격' ?
+            '상부 가구장 아랫선과 기준 도어 윗선이 노란 가로선 부근에 함께 보이도록 찍으세요.' :
+            `두 도어의 ${shot.group === '이음부 상단' ? '상단' : '하단'} 모서리는 가로 점선에, 사이 틈은 세로 점선에 맞추세요.`;
         document.getElementById(prefix + 'StepDesc').textContent =
-            (shot.group === '기준 간격' ? '파랑 선: 가구장 하단 / 노랑 선: 도어 상단. ' :
-             '도어 이음부를 초록 세로선에, 좌우 도어 끝을 파랑 가로선에 맞춰주세요. ') +
-            (before ? '' : '고스트는 구도 참고용이며, 안정 후 자동 촬영을 시도합니다. ') + shot.desc;
-        document.getElementById(prefix === 'before' ? 'beforeAnalysisGuides' : 'afterAnalysisGuides').className =
-            'camera-guides ' + (shot.group === '기준 간격' ? 'top' : 'seam');
+            (before ? '' : '수리 전 고스트 사진을 참고하세요. ') + shotInstruction;
         document.getElementById(prefix + 'Previous').disabled = shotIndex === 0;
         if (!before) {
             const ref = beforePhotos.get(shot.key);
@@ -1085,6 +1162,9 @@ body, .phone-frame {height:100vh;height:100dvh;}
         const request = cameraRequest;
         const [screenId, videoId] = cameraScreens[step];
         const video = document.getElementById(videoId);
+        video.dataset.digitalZoom='1';
+        video.dataset.currentZoom='1';
+        video.style.transform='';
         const shutter = document.querySelector('#' + screenId + ' .shutter-btn');
         if (!updateCameraShotUI(step)) return;
         showFigure(step===1?'before':'after');
@@ -1095,10 +1175,8 @@ body, .phone-frame {height:100vh;height:100dvh;}
         }
         showScreen(screenId);
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {facingMode: {ideal: 'environment'}, width: {ideal: 1080},
-                    height: {ideal: 1920}, aspectRatio: {ideal: 9/16}}, audio: false
-            });
+            // APK 1.1.2 camera request, without forcing a 9:16 sensor capture aspect ratio.
+            const stream = await openAPKCameraStream();
             if (request !== cameraRequest) {
                 stream.getTracks().forEach(track => track.stop());
                 return;
@@ -1124,17 +1202,76 @@ body, .phone-frame {height:100vh;height:100dvh;}
     const shotZooms = new Map();
     let zoomTrack = null;
     let zoomRequestId = 0;
-    let figureVisible = {before:false,after:false};
+    let figureVisible = {before:true,after:true};
     let beforeAutoRequest = 0;
+    // APK 1.1.2-style per-shot figure: full installation + highlighted location + camera framing.
+    // The image is a schematic only; it does not claim to detect a valid measurement.
     function guideSVG(shot) {
-        const gap=shot.group==='기준 간격';
-        const title=gap ? '가구장 하단과 기준 도어 윗선 모두 포함' : shot.group==='이음부 상단' ? '좌우 도어 윗선과 가운데 이음부' : '좌우 도어 아랫선과 가운데 이음부';
-        const h=gap ? '<path d="M18 30 H282" stroke="#1682db" stroke-width="4"/><path d="M18 61 H282" stroke="#e7af29" stroke-width="4"/>' :
-          '<path d="M25 52 H142 M158 52 H275" stroke="#138adf" stroke-width="4"/><path d="M150 8 V88" stroke="#21a67b" stroke-width="3" stroke-dasharray="7 5"/>';
-        const blocks=gap ? '<rect x="20" y="5" width="260" height="25" fill="#c6d2dd"/><rect x="20" y="63" width="260" height="26" fill="#e8f0f6"/>' :
-            `<rect x="26" y="${shot.group==='이음부 상단'?54:5}" width="115" height="${shot.group==='이음부 상단'?32:47}" fill="#d7e7f5"/><rect x="159" y="${shot.group==='이음부 상단'?54:5}" width="115" height="${shot.group==='이음부 상단'?32:47}" fill="#d7e7f5"/>`;
-        return '<svg viewBox="0 0 300 95" role="img" aria-label="'+title+'"><rect width="300" height="95" rx="7" fill="#edf6ff"/>'+blocks+h+'</svg><p>'+title+' · 도어의 실제 경계가 선명해야 합니다.</p>';
+        const count=fridgeCount||2, x0=6, total=126, gap=1.6;
+        const doorWidth=(total-gap*(count-1))/count;
+        let doors='';
+        for(let i=0;i<count;i++){
+            const x=x0+i*(doorWidth+gap);
+            doors+=`<rect x="${x.toFixed(2)}" y="29" width="${doorWidth.toFixed(2)}" height="62" rx="1.5" fill="#e7eaee" stroke="#9aa3ad"/>`+
+                `<text x="${(x+doorWidth/2).toFixed(2)}" y="63" font-size="${count>4?9:12}" font-weight="800" fill="#7a838d" text-anchor="middle">${i+1}</text>`;
+        }
+        const gapShot=shot.group==='기준 간격',upper=shot.group==='이음부 상단';
+        const boundary=gapShot?null:Number(shot.key.split('-')[1]);
+        const focusX=gapShot ? x0+(referenceDoor-1)*(doorWidth+gap)+doorWidth/2 : x0+boundary*(doorWidth+gap)-gap/2;
+        const focusY=gapShot?28:(upper?30:91);
+        let picture,labels;
+        if(gapShot){
+            picture='<rect x="198" y="21" width="62" height="31" fill="#c9b79c"/>'+
+                '<rect x="198" y="59" width="62" height="32" fill="#e7eaee"/>'+
+                '<path d="M195 55 H263" stroke="#ffd400" stroke-width="1.6" stroke-dasharray="4 2"/>';
+            labels=['가구장','↕ 간격','→가로선','도어'];
+        }else{
+            const y=upper?55:20;
+            picture=`<rect x="198" y="${y}" width="30" height="36" fill="#e7eaee"/>`+
+                `<rect x="231" y="${y}" width="29" height="36" fill="#e7eaee"/>`+
+                '<path d="M195 55 H263 M229 20 V92" stroke="#ffd400" stroke-width="1.6" stroke-dasharray="4 2"/>';
+            labels=[upper?'윗모서리':'아랫모서리','→가로선','틈','→세로선'];
+        }
+        const fig=`<svg class="apk-shot-figure" viewBox="0 0 345 109" role="img" aria-label="${shot.title} 촬영 위치 예시">
+            <defs><marker id="ddakShotArrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L6 3L0 6z" fill="#0068b6"/></marker></defs>
+            <text x="68" y="11" text-anchor="middle" font-size="12" fill="#0068b6" font-weight="800">① 찍을 위치</text>
+            <rect x="6" y="17" width="126" height="10" rx="2" fill="#c9b79c"/>${doors}
+            <circle cx="${focusX.toFixed(1)}" cy="${focusY}" r="9" fill="none" stroke="#e6443c" stroke-width="3"/>
+            <circle cx="${focusX.toFixed(1)}" cy="${focusY}" r="2.5" fill="#e6443c"/>
+            <path d="M145 57 H175" stroke="#0068b6" stroke-width="2.8" marker-end="url(#ddakShotArrow)"/>
+            <text x="229" y="11" text-anchor="middle" font-size="12" fill="#0068b6" font-weight="800">② 화면에 이렇게</text>
+            <rect x="193" y="17" width="72" height="79" rx="6" fill="#282b30"/>${picture}
+            <text x="270" y="37" font-size="10" fill="#4b5563">${labels[0]}</text>
+            <text x="270" y="48" font-size="10" fill="#4b5563">${labels[1]}</text>
+            <text x="270" y="66" font-size="10" fill="#4b5563">${labels[2]}</text>
+            <text x="270" y="78" font-size="10" fill="#4b5563">${labels[3]}</text>
+        </svg>`;
+        const detail=gapShot?'상부 가구장 아랫선과 기준 도어 윗선이 함께 보이도록 촬영하세요.' :
+            `두 도어 사이 틈은 세로 점선에, ${upper?'상단':'하단'} 모서리는 가로 점선에 맞춰주세요.`;
+        return fig+`<p class="apk-shot-instruction">${detail}</p>`;
     }
+
+    // APK 1.1.2-style white dotted guide rectangles over the live video.
+    // Dotted silhouettes are instructional, not a claim that an edge has been found.
+    function setupAPKShotGuide(shot,prefix){
+        const gap=shot.group==='기준 간격', upper=shot.group==='이음부 상단';
+        const outlines=gap ?
+            '<rect class="silhouette" x="6" y="6" width="88" height="40" rx="1.5"/><rect class="silhouette" x="6" y="54" width="88" height="40" rx="1.5"/>' :
+            `<rect class="silhouette" x="6" y="${upper?50:4}" width="43" height="46" rx="1.5"/><rect class="silhouette" x="51" y="${upper?50:4}" width="43" height="46" rx="1.5"/>`;
+        const vertical=gap?'':'<rect class="band-vertical" x="45" y="0" width="10" height="100"/>';
+        document.getElementById(prefix+'LiveGuide').innerHTML=
+            '<rect class="band-horizontal" x="0" y="45" width="100" height="10"/>'+vertical+outlines+
+            '<line class="guide-center" x1="5" y1="50" x2="95" y2="50"/>'+
+            (gap?'':'<line class="guide-center" x1="50" y1="4" x2="50" y2="96"/>');
+        const labels=gap ? [['상부 가구장',50,26],[`${referenceDoor}번 기준 도어`,50,74]] :
+            upper ? [[`${shot.key.split('-')[1]}번 도어`,27,75],[`${shot.key.split('-')[2]}번 도어`,73,75]] :
+                [[`${shot.key.split('-')[1]}번 도어`,27,24],[`${shot.key.split('-')[2]}번 도어`,73,24]];
+        document.getElementById(prefix+'GuideLabels').innerHTML=labels.map(([t,x,y])=>
+            `<span style="left:${x}%;top:${y}%">${t}</span>`).join('');
+        const chips=gap?['가구장 ↔ 도어','가로선 2개']:['좌·우 도어','모서리 2개','가운데 이음부'];
+        document.getElementById(prefix+'GuideChips').innerHTML=chips.map(t=>`<span>${t}</span>`).join('');
+    }
+
     function toggleShotFigure(phase) {
         figureVisible[phase]=!figureVisible[phase];
         showFigure(phase);
@@ -1155,19 +1292,35 @@ body, .phone-frame {height:100vh;height:100dvh;}
         w/=digital; h/=digital;
         return [(origW-w)/2,(origH-h)/2,w,h];
     }
+    async function openAPKCameraStream() {
+        const base={facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}};
+        try { return await navigator.mediaDevices.getUserMedia({video:{...base,zoom:true},audio:false}); }
+        catch { return await navigator.mediaDevices.getUserMedia({video:base,audio:false}); }
+    }
+    function apkTrackCaps(track){
+        try {return track?.getCapabilities?.()||{};}catch{return {};}
+    }
+    async function enableAPKAutofocus(track){
+        const modes=apkTrackCaps(track).focusMode||[];
+        if (modes.includes('continuous')) {
+            try {await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+        }
+    }
     async function prepareCameraExtras(video,phase,request) {
         const track=activeCameraStream?.getVideoTracks()?.[0];
         if (!track || request!==cameraRequest) return;
         zoomTrack=track;
-        const capabilities=track.getCapabilities?track.getCapabilities():{};
-        if(capabilities.focusMode?.includes('continuous')) {
-            try {await track.applyConstraints({advanced:[{focusMode:'continuous'}]});}catch{}
+        const capabilities=apkTrackCaps(track);
+        if(video.dataset.stream!==track.id){
+            video.dataset.stream=track.id;
+            await enableAPKAutofocus(track);
         }
         const isAfter=phase==='after';
         const refZoom=isAfter ? (shotZooms.get(shotForCurrentIndex().key)||1) : null;
         const slider=document.getElementById(phase+'ZoomRange');
-        const max=capabilities.zoom ? Math.min(6,capabilities.zoom.max||3) : 3;
-        const min=capabilities.zoom ? Math.max(1,capabilities.zoom.min||1) : 1;
+        const hardware=!!(capabilities.zoom && capabilities.zoom.max>capabilities.zoom.min);
+        const max=hardware ? Math.min(8,capabilities.zoom.max) : 3;
+        const min=hardware ? capabilities.zoom.min : 1;
         slider.min=min;slider.max=Math.max(min,max);
         slider.step=capabilities.zoom?.step||0.1;
         slider.disabled=!!refZoom;
@@ -1180,7 +1333,7 @@ body, .phone-frame {height:100vh;height:100dvh;}
         const track=activeCameraStream?.getVideoTracks()?.[0];
         if(!track || request!==cameraRequest) return;
         let hard=false;
-        const capabilities=track.getCapabilities?.()||{};
+        const capabilities=apkTrackCaps(track);
         if(capabilities.zoom && value>=capabilities.zoom.min && value<=capabilities.zoom.max) {
             try {await track.applyConstraints({advanced:[{zoom:value}]}); hard=true;}catch{}
         }
@@ -1200,20 +1353,24 @@ body, .phone-frame {height:100vh;height:100dvh;}
     async function tapCameraFocus(video,event) {
         const track=activeCameraStream?.getVideoTracks()?.[0];
         if(!track || !video.videoWidth) return;
-        const host=video.parentElement;
-        const rect=host.getBoundingClientRect();
-        const x=Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width));
-        const y=Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height));
-        const ring=document.createElement('span');ring.className='focus-ring-ddak';
+        const host=video.parentElement,rect=host.getBoundingClientRect();
+        const crop=videoCropRect(video);
+        const x=(crop[0]+(event.clientX-rect.left)/rect.width*crop[2])/video.videoWidth;
+        const y=(crop[1]+(event.clientY-rect.top)/rect.height*crop[3])/video.videoHeight;
+        const ring=document.createElement('span'); ring.className='focus-ring-ddak';
         ring.style.left=(event.clientX-rect.left)+'px';ring.style.top=(event.clientY-rect.top)+'px';
         host.appendChild(ring);setTimeout(()=>ring.remove(),800);
-        const modes=track.getCapabilities?.().focusMode||[];
-        try {
-            const point={pointsOfInterest:[{x,y}]};
-            if(modes.includes('single-shot'))point.focusMode='single-shot';
-            else if(modes.includes('continuous'))point.focusMode='continuous';
-            await track.applyConstraints({advanced:[point]});
-        } catch {} // not all Android devices support tap-to-focus constraint
+        const modes=apkTrackCaps(track).focusMode||[];
+        const point={pointsOfInterest:[{x:Math.max(0,Math.min(1,x)),y:Math.max(0,Math.min(1,y))}]};
+        try{
+            if(modes.includes('single-shot'))
+                await track.applyConstraints({advanced:[{...point,focusMode:'single-shot'}]});
+            else
+                await track.applyConstraints({advanced:[{...point,...(modes.includes('continuous')?{focusMode:'continuous'}:{})}]});
+        }catch{
+            try{await track.applyConstraints({advanced:[point]});}catch{}
+        }
+        // Focus ring is UI feedback for the tap, not confirmation that focusing succeeded.
     }
     for(const id of ['videoFeed','videoFeed2']) {
         const video=document.getElementById(id);
